@@ -6,7 +6,7 @@ RUN npm ci
 FROM node:20-alpine AS production-dependencies-env
 COPY ./package.json package-lock.json /app/
 WORKDIR /app
-RUN npm ci --omit=dev
+RUN npm ci
 
 FROM node:20-alpine AS build-env
 COPY . /app/
