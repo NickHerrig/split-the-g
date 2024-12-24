@@ -1,19 +1,34 @@
-import { useLocation, useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { RoboflowLogo } from "../components/RoboflowLogo";
+import { useEffect } from "react";
 
-export function meta() {
-  return [
-    { title: "Your Split Score - Split the G" },
-    { name: "description", content: "See how well your Guinness was poured." },
-  ];
-}
+type ScoreData = {
+  pourStatus: 'split' | 'not-split' | 'no-glass' | 'unknown';
+  predictions: any[];
+  visualizationImage: string | null;
+};
 
 export default function Score() {
   const location = useLocation();
   const navigate = useNavigate();
   
-  const { pourStatus, predictions, visualizationImage } = location.state || {};
+  // Get data from navigation state
+  const scoreData = location.state as ScoreData;
+  
+  // Move redirect to useEffect
+  useEffect(() => {
+    if (!scoreData) {
+      navigate('/');
+    }
+  }, [scoreData, navigate]);
+  
+  // Return early if no data, but let useEffect handle redirect
+  if (!scoreData) {
+    return null;
+  }
 
+  const { pourStatus, predictions, visualizationImage } = scoreData;
+  
   const getMessageContent = (status: string | undefined) => {
     switch (status) {
       case 'split':
