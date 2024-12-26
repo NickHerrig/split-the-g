@@ -9,8 +9,8 @@ const isClient = typeof window !== 'undefined';
 
 export function meta() {
   return [
-    { title: "Split the G - Guinness Pour Analyzer" },
-    { name: "description", content: "Test your Guinness pouring skills with AI-powered analysis" },
+    { title: "Split the G Scorer" },
+    { name: "description", content: "Test your Split the G skills with AI-powered analysis" },
   ];
 }
 
