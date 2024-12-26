@@ -98,7 +98,7 @@ export default function Home() {
     
     setModelLoading(true);
     inferEngine
-      .startWorker("split-g-label-experiment", "1", "rf_KknWyvJ8ONXATuszsdUEuknA86p2")
+      .startWorker("split-g-label-experiment", "2", "rf_KknWyvJ8ONXATuszsdUEuknA86p2")
       .then((id) => setModelWorkerId(id));
   }, [inferEngine, modelLoading]);
 
@@ -150,8 +150,11 @@ export default function Home() {
         const hasGlass = predictions.some(pred => 
           pred.class === "glass"
         );
+        const hasG = predictions.some(pred => 
+          pred.class === "G"
+        );
 
-        if (hasGlass) {
+        if (hasGlass && hasG) {
           setConsecutiveDetections(prev => prev + 1);
           
           if (consecutiveDetections >= 6) {
@@ -194,7 +197,11 @@ export default function Home() {
           }
         } else {
           setConsecutiveDetections(0);
-          setFeedbackMessage("Show your pint glass");
+          if (!hasGlass) {
+            setFeedbackMessage("Show your pint glass");
+          } else if (!hasG) {
+            setFeedbackMessage("Make sure the G pattern is visible");
+          }
         }
       } catch (error) {
         console.error('Detection error:', error);
