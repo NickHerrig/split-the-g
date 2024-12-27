@@ -4,6 +4,7 @@ import Webcam from "react-webcam";
 import { RoboflowLogo } from "../components/RoboflowLogo";
 import { PintGlassOverlay } from "../components/PintGlassOverlay";
 import type { ActionFunctionArgs } from "react-router";
+import { calculateScore } from "~/utils/scoring";
 
 const isClient = typeof window !== 'undefined';
 
@@ -39,21 +40,26 @@ export async function action({ request }: ActionFunctionArgs) {
     const result = await response.json();
     const splitImage = result.outputs?.[0]?.['split image']?.[0]?.value || null;
     const pintImage = result.outputs?.[0]?.['pint image']?.value || null;
+    const splitScore = calculateScore(result.outputs?.[0] || {});
 
-    return {
-      success: true,
-      splitScore: result.outputs?.[0]?.score || 4.2,
+    // Return data matching the ScoreData type from score.tsx
+    return { 
+      success: true, 
+      message: 'Image processed successfully',
+      splitScore: splitScore,
       visualizationImages: {
         split: splitImage,
         pint: pintImage
-      },
-      timestamp: new Date().toISOString()
+      }
     };
+
   } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-      timestamp: new Date().toISOString()
+    console.error('Error processing image:', error);
+    return { 
+      success: false, 
+      message: 'Failed to process image',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      status: 500
     };
   }
 }
@@ -68,7 +74,7 @@ export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const submit = useSubmit();
-  const actionData = useActionData();
+  const actionData = useActionData<typeof action>();
   
   // Dynamically import and initialize inference engine
   const [inferEngine, setInferEngine] = useState<any>(null);
@@ -272,7 +278,7 @@ export default function Home() {
       {isSubmitting ? (
         <div className="fixed inset-0 bg-guinness-black/95 flex flex-col items-center justify-center gap-6 z-50">
           <div className="w-24 h-24 border-4 border-guinness-gold/20 border-t-guinness-gold rounded-full animate-spin"></div>
-          <p className="text-guinness-gold text-xl font-medium">Analyzing your pour...</p>
+          <p className="text-guinness-gold text-xl font-medium">Analyzing your split...</p>
           <p className="text-guinness-tan text-sm">This will just take a moment</p>
         </div>
       ) : (
@@ -373,6 +379,23 @@ export default function Home() {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {actionData?.success && (
+        <div className="mt-4 p-4 bg-green-100 rounded-lg">
+          <h3 className="text-xl font-bold mb-2">Score: {actionData.score}</h3>
+          <p className="text-sm text-gray-600">
+            {parseFloat(actionData.score) >= 3.75 
+              ? "Split G detected! 🎉" 
+              : "Keep trying for the perfect split! 🎯"}
+          </p>
+        </div>
+      )}
+
+      {actionData?.error && (
+        <div className="mt-4 p-4 bg-red-100 rounded-lg">
+          <p className="text-red-600">{actionData.error}</p>
         </div>
       )}
     </main>
