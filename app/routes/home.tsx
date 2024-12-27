@@ -18,49 +18,44 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const base64Image = formData.get('image') as string;
 
-  const response = await fetch('https://detect.roboflow.com/infer/workflows/nicks-workspace/split-the-g', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      api_key: process.env.ROBOFLOW_API_KEY,
-      inputs: {
-        "image": {"type": "base64", "value": base64Image}
-      }
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to process image');
-  }
-
-  const result = await response.json();
-  const predictions = result.outputs[0]?.model_predictions?.predictions || [];
-  
-  let pourStatus: 'split' | 'not-split' | 'no-glass' = 'no-glass';
-  
-  if (predictions.length > 0) {
-    const hasSplit = predictions.some(
-      (pred: { class: string; confidence: number }) => pred.class === "Split"
-    );
-    const hasNotSplit = predictions.some(
-      (pred: { class: string; confidence: number }) => pred.class === "Not-Split"
-    );
+  try {
+    const response = await fetch('https://detect.roboflow.com/infer/workflows/hunter-diminick/split-g-scoring', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        api_key: process.env.ROBOFLOW_API_KEY,
+        inputs: {
+          "image": {"type": "base64", "value": base64Image}
+        }
+      })
+    });
     
-    if (hasSplit) pourStatus = 'split';
-    else if (hasNotSplit) pourStatus = 'not-split';
-  }
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
 
-  const visualizationImage = result.outputs[0]?.bounding_box_visualization?.value;
-  
-  return { 
-    pourStatus,
-    predictions,
-    visualizationImage: visualizationImage 
-      ? `data:image/jpeg;base64,${visualizationImage}` 
-      : null
-  };
+    const result = await response.json();
+    const splitImage = result.outputs?.[0]?.['split image']?.[0]?.value || null;
+    const pintImage = result.outputs?.[0]?.['pint image']?.value || null;
+
+    return {
+      success: true,
+      splitScore: result.outputs?.[0]?.score || 4.2,
+      visualizationImages: {
+        split: splitImage,
+        pint: pintImage
+      },
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      timestamp: new Date().toISOString()
+    };
+  }
 }
 
 export default function Home() {
@@ -214,11 +209,20 @@ export default function Home() {
 
   // Add effect to handle action response
   useEffect(() => {
-    if (actionData && 'pourStatus' in actionData) {
+    if (actionData && 'success' in actionData) {
       setIsSubmitting(false);
-      navigate('/score', { 
-        state: actionData 
-      });
+      if (actionData.success) {
+        navigate('/score', { 
+          state: {
+            splitScore: actionData.splitScore,
+            visualizationImages: actionData.visualizationImages
+          }
+        });
+      } else {
+        console.error('Action failed:', actionData.error);
+        setFeedbackMessage("Analysis failed. Please try again.");
+        setIsCameraActive(false);
+      }
     }
   }, [actionData, navigate]);
 
