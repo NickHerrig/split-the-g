@@ -99,7 +99,7 @@ export default function Home() {
     
     setModelLoading(true);
     inferEngine
-      .startWorker("split-g-label-experiment", "2", "rf_KknWyvJ8ONXATuszsdUEuknA86p2")
+      .startWorker("split-g-label-experiment", "6", "rf_KknWyvJ8ONXATuszsdUEuknA86p2")
       .then((id) => setModelWorkerId(id));
   }, [inferEngine, modelLoading]);
 
