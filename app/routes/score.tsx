@@ -22,9 +22,10 @@ export default function Score() {
   if (!scoreData) return null;
 
   const getScoreMessage = (score: number) => {
-    if (score >= 8) return "Perfect Split! 🏆";
-    if (score >= 6) return "Good Form! 👍";
-    return "Keep Practicing! 💪";
+    if (score >= 4.70) return "Sláinte! 🏆 A Perfect Split!";
+    if (score >= 3.75) return "Beautiful Split! ⭐ Like a True Dubliner!";
+    if (score >= 3.0) return "Cheers for trying! 🍺 Have Another Go!";
+    return "The Perfect Split Awaits! 🎓 Try Again!";
   };
 
   return (
@@ -42,12 +43,17 @@ export default function Score() {
 
         {/* Score Card */}
         <div className="mt-8 text-center">
-          <div className="mt-4 inline-block bg-guinness-gold/10 rounded-xl p-6 backdrop-blur-sm">
-            <div className="text-5xl md:text-6xl font-bold text-guinness-gold">
-              {scoreData.splitScore.toFixed(1)}
-            </div>
-            <div className="text-sm md:text-base text-guinness-tan mt-1">
-              {getScoreMessage(scoreData.splitScore)}
+          <div className="mt-4 inline-block bg-guinness-gold/10 rounded-xl p-8 backdrop-blur-sm">
+            <div className="flex flex-col items-center">
+              <div className="text-6xl md:text-7xl font-bold text-guinness-gold mb-2">
+                {scoreData.splitScore.toFixed(2)}
+              </div>
+              <div className="text-xl md:text-2xl text-guinness-tan/80 mb-3">
+                out of 5.0
+              </div>
+              <div className="text-lg md:text-xl text-guinness-tan mt-2 max-w-md">
+                {getScoreMessage(scoreData.splitScore)}
+              </div>
             </div>
           </div>
         </div>
