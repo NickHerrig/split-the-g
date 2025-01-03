@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState, useMemo } from "react";
-import { useNavigate, useFetcher, useSubmit, useActionData } from "react-router";
+import { useNavigate, useFetcher, useSubmit, useActionData, redirect } from "react-router";
 import Webcam from "react-webcam";
 import { RoboflowLogo } from "../components/RoboflowLogo";
 import { PintGlassOverlay } from "../components/PintGlassOverlay";
 import type { ActionFunctionArgs } from "react-router";
 import { calculateScore } from "~/utils/scoring";
+import { uploadImage } from "~/utils/imageStorage";
+import { supabase } from "~/utils/supabase";
+import { LeaderboardButton } from "../components/LeaderboardButton";
+import { generateBeerUsername } from "~/utils/usernameGenerator";
 
 const isClient = typeof window !== 'undefined';
 
@@ -18,6 +22,7 @@ export function meta() {
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const base64Image = formData.get('image') as string;
+  const username = generateBeerUsername();
 
   try {
     const response = await fetch('https://detect.roboflow.com/infer/workflows/hunter-diminick/split-g-scoring', {
@@ -34,31 +39,57 @@ export async function action({ request }: ActionFunctionArgs) {
     });
     
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`API request failed (${response.status}): ${errorText}`);
     }
 
     const result = await response.json();
-    const splitImage = result.outputs?.[0]?.['split image']?.[0]?.value || null;
-    const pintImage = result.outputs?.[0]?.['pint image']?.value || null;
-    const splitScore = calculateScore(result.outputs?.[0] || {});
+    
+    // Add validation for required data
+    if (!result.outputs?.[0]) {
+      throw new Error('No outputs received from API');
+    }
 
-    // Return data matching the ScoreData type from score.tsx
-    return { 
-      success: true, 
-      message: 'Image processed successfully',
-      splitScore: splitScore,
-      visualizationImages: {
-        split: splitImage,
-        pint: pintImage
-      }
-    };
+    const splitImage = result.outputs[0]['split image']?.[0]?.value;
+    const pintImage = result.outputs[0]['pint image']?.value;
+
+    if (!splitImage || !pintImage) {
+      throw new Error('Missing required image data from API response');
+    }
+
+    const splitScore = calculateScore(result.outputs[0]);
+
+    // Upload images to storage
+    const splitImageUrl = await uploadImage(splitImage, 'split-images');
+    const pintImageUrl = await uploadImage(pintImage, 'pint-images');
+
+    // Create database record
+    const { data: score, error: dbError } = await supabase
+      .from('scores')
+      .insert({
+        split_score: splitScore,
+        split_image_url: splitImageUrl,
+        pint_image_url: pintImageUrl,
+        username: username,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (dbError) throw dbError;
+
+    // Redirect to the score page with the ID
+    return redirect(`/score/${score.id}`);
 
   } catch (error) {
     console.error('Error processing image:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('Detailed error:', JSON.stringify(error, null, 2));
+    
     return { 
       success: false, 
       message: 'Failed to process image',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMessage,
       status: 500
     };
   }
@@ -179,99 +210,99 @@ export default function Home() {
               stream?.getTracks().forEach(track => track.stop());
               setIsCameraActive(false);
 
-              // Submit form data to action
-              const formData = new FormData();
-              formData.append('image', base64Image);
+                            // Submit form data to action
+                            const formData = new FormData();
+                            formData.append('image', base64Image);
+                            
+                            submit(formData, {
+                              method: 'post',
+                              action: '/?index',
+                              encType: 'multipart/form-data',
+                            });
+                          }
+                          return; // Exit the detection loop
+                        }
+                        if (consecutiveDetections >= 3) {
+                          setFeedbackMessage("Hold still...");
+                        } else {
+                          setFeedbackMessage("Keep the glass centered...");
+                        }
+                      } else {
+                        setConsecutiveDetections(0);
+                        if (!hasGlass) {
+                          setFeedbackMessage("Show your pint glass");
+                        } else if (!hasG) {
+                          setFeedbackMessage("Make sure the G pattern is visible");
+                        }
+                      }
+                    } catch (error) {
+                      console.error('Detection error:', error);
+                    }
+                  };
+
+                  const intervalId = setInterval(detectFrame, 500);
+                  return () => clearInterval(intervalId);
+                }, [modelWorkerId, isCameraActive, inferEngine, isVideoReady, consecutiveDetections, submit]);
               
-              submit(formData, {
-                method: 'post',
-                action: '/?index',
-                encType: 'multipart/form-data',
-              });
-            }
-            return; // Exit the detection loop
-          }
-          if (consecutiveDetections >= 3) {
-            setFeedbackMessage("Hold still...");
-          } else {
-            setFeedbackMessage("Keep the glass centered...");
-          }
-        } else {
-          setConsecutiveDetections(0);
-          if (!hasGlass) {
-            setFeedbackMessage("Show your pint glass");
-          } else if (!hasG) {
-            setFeedbackMessage("Make sure the G pattern is visible");
-          }
-        }
-      } catch (error) {
-        console.error('Detection error:', error);
-      }
-    };
-
-    const intervalId = setInterval(detectFrame, 500);
-    return () => clearInterval(intervalId);
-  }, [modelWorkerId, isCameraActive, inferEngine, isVideoReady, consecutiveDetections, submit]);
-
-  // Add effect to handle action response
-  useEffect(() => {
-    if (actionData && 'success' in actionData) {
-      setIsSubmitting(false);
-      if (actionData.success) {
-        navigate('/score', { 
-          state: {
-            splitScore: actionData.splitScore,
-            visualizationImages: actionData.visualizationImages
-          }
-        });
-      } else {
-        console.error('Action failed:', actionData.error);
-        setFeedbackMessage("Analysis failed. Please try again.");
-        setIsCameraActive(false);
-      }
-    }
-  }, [actionData, navigate]);
-
-  useEffect(() => {
-    if (fetcher.data?.success) {
-      // Store the image in sessionStorage
-      if (videoRef.current && canvasRef.current) {
-        const canvas = canvasRef.current;
-        const imageData = canvas.toDataURL('image/jpeg');
-        sessionStorage.setItem('captured-pour-image', imageData);
-      }
-      setIsCameraActive(false);
-      navigate('/score');
-    }
-  }, [fetcher.data, navigate]);
-
-  useEffect(() => {
-    if (isCameraActive) {
-      setCapturedImage(null);
-    }
-  }, [isCameraActive]);
-
-  const videoConstraints = {
-    facingMode: { ideal: "environment" },
-    width: 720,
-    height: 960,
-  };
-
-  const handleCapture = async () => {
-    if (webcamRef.current) {
-      const imageSrc = webcamRef.current.getScreenshot();
-      if (imageSrc) {
-        setCapturedImage(imageSrc);
-        
-        const formData = new FormData();
-        const base64Image = imageSrc.replace(/^data:image\/\w+;base64,/, '');
-        formData.append('image', base64Image);
-        formData.append('imageUrl', imageSrc);
-
-        fetcher.submit(formData, { method: 'post' });
-      }
-    }
-  };
+                // Add effect to handle action response
+                useEffect(() => {
+                  if (actionData && 'success' in actionData) {
+                    setIsSubmitting(false);
+                    if (actionData.success) {
+                      navigate('/score', { 
+                        state: {
+                          splitScore: actionData.splitScore,
+                          visualizationImages: actionData.visualizationImages
+                        }
+                      });
+                    } else {
+                      console.error('Action failed:', actionData.error);
+                      setFeedbackMessage("Analysis failed. Please try again.");
+                      setIsCameraActive(false);
+                    }
+                  }
+                }, [actionData, navigate]);
+              
+                useEffect(() => {
+                  if (fetcher.data?.success) {
+                    // Store the image in sessionStorage
+                    if (videoRef.current && canvasRef.current) {
+                      const canvas = canvasRef.current;
+                      const imageData = canvas.toDataURL('image/jpeg');
+                      sessionStorage.setItem('captured-pour-image', imageData);
+                    }
+                    setIsCameraActive(false);
+                    navigate('/score');
+                  }
+                }, [fetcher.data, navigate]);
+              
+                useEffect(() => {
+                  if (isCameraActive) {
+                    setCapturedImage(null);
+                  }
+                }, [isCameraActive]);
+              
+                const videoConstraints = {
+                  facingMode: { ideal: "environment" },
+                  width: 720,
+                  height: 960,
+                };
+              
+                const handleCapture = async () => {
+                  if (webcamRef.current) {
+                    const imageSrc = webcamRef.current.getScreenshot();
+                    if (imageSrc) {
+                      setCapturedImage(imageSrc);
+                      
+                      const formData = new FormData();
+                      const base64Image = imageSrc.replace(/^data:image\/\w+;base64,/, '');
+                      formData.append('image', base64Image);
+                      formData.append('imageUrl', imageSrc);
+              
+                      fetcher.submit(formData, { method: 'post' });
+                    }
+                  }
+                };
 
   return (
     <main className="flex items-center justify-center min-h-screen bg-guinness-black text-guinness-cream">
@@ -296,13 +327,14 @@ export default function Home() {
                 className="flex items-center gap-1.5 text-guinness-gold hover:text-guinness-cream transition-colors duration-300"
               >
                 <RoboflowLogo className="h-5 w-5" />
-                <span className="font-medium">Roboflow AI</span>
+                <span className="font-medium">Roboflow</span>
               </a>
             </div>
             <div className="w-32 h-0.5 bg-guinness-gold my-2"></div>
             <p className="text-lg md:text-xl text-guinness-tan font-light max-w-sm md:max-w-md mx-auto">
               Put your Guinness splitting technique to the test! 
             </p>
+            <LeaderboardButton />
           </header>
 
           <div className="w-full max-w-md flex flex-col gap-4">

@@ -6,6 +6,6 @@ import {
 
 export default [
   index("routes/home.tsx"),
-  route("score", "./routes/score.tsx"),
+  route("score/:splitId", "./routes/score.tsx"),
   route("leaderboard", "./routes/leaderboard.tsx"),
 ] satisfies RouteConfig;

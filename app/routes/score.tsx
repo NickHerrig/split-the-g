@@ -1,31 +1,78 @@
-import { useNavigate, useLocation } from "react-router";
+import { useLoaderData } from "react-router";
+import { type LoaderFunctionArgs } from "react-router";
 import { RoboflowLogo } from "../components/RoboflowLogo";
-import { useEffect } from "react";
+import { type Score } from "~/types/score";
+import { supabase } from "~/utils/supabase";
+import { LeaderboardButton } from "../components/LeaderboardButton";
+import { Link } from "react-router";
+import { useState } from "react";
 
-type ScoreData = {
-  splitScore: number;
-  visualizationImages: {
-    split: string;
-    pint: string;
-  };
-};
+export async function loader({ params }: LoaderFunctionArgs) {
+  const { splitId } = params;
+
+  const { data: score, error } = await supabase
+    .from('scores')
+    .select('*')
+    .eq('id', splitId)
+    .single();
+
+  if (error || !score) {
+    throw new Response("Score not found", { status: 404 });
+  }
+
+  const { count: rank } = await supabase
+    .from('scores')
+    .select('*', { count: 'exact', head: true })
+    .gte('split_score', score.split_score);
+
+  const { count: totalSplits } = await supabase
+    .from('scores')
+    .select('*', { count: 'exact', head: true });
+
+  return { score, rank, totalSplits };
+}
 
 export default function Score() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const scoreData = location.state as ScoreData;
+  const { score, rank, totalSplits } = useLoaderData<{ 
+    score: Score; 
+    rank: number;
+    totalSplits: number;
+  }>();
+  const [shareSuccess, setShareSuccess] = useState(false);
   
-  useEffect(() => {
-    if (!scoreData) navigate('/');
-  }, [scoreData, navigate]);
-  
-  if (!scoreData) return null;
-
   const getScoreMessage = (score: number) => {
     if (score >= 4.70) return "Sláinte! 🏆 A Perfect Split!";
     if (score >= 3.75) return "Beautiful Split! ⭐ Like a True Dubliner!";
     if (score >= 3.0) return "Cheers for trying! 🍺 Have Another Go!";
     return "The Perfect Split Awaits! 🎓 Try Again!";
+  };
+
+  const getShareMessage = () => {
+    const scoreUrl = `${window.location.origin}/score/${score.id}`;
+    
+    return `🍺 Split G Score: ${score.split_score.toFixed(2)}/5.0\n` +
+           `Rank: #${rank} of ${totalSplits}\n` +
+           `Check it out: ${scoreUrl}`;
+  };
+
+  const handleShare = async () => {
+    const shareText = getShareMessage();
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          text: shareText,
+        });
+        setShareSuccess(true);
+      } else {
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(shareText);
+        setShareSuccess(true);
+        setTimeout(() => setShareSuccess(false), 2000);
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
   };
 
   return (
@@ -45,14 +92,20 @@ export default function Score() {
         <div className="mt-8 text-center">
           <div className="mt-4 inline-block bg-guinness-gold/10 rounded-xl p-8 backdrop-blur-sm">
             <div className="flex flex-col items-center">
+              <div className="text-xl text-guinness-tan mb-2">
+                {score.username || 'Anonymous Pourer'}
+              </div>
+              <div className="text-lg text-guinness-tan/80 mb-4">
+                Rank #{rank} of {totalSplits} Splits
+              </div>
               <div className="text-6xl md:text-7xl font-bold text-guinness-gold mb-2">
-                {scoreData.splitScore.toFixed(2)}
+                {score.split_score.toFixed(2)}
               </div>
               <div className="text-xl md:text-2xl text-guinness-tan/80 mb-3">
                 out of 5.0
               </div>
               <div className="text-lg md:text-xl text-guinness-tan mt-2 max-w-md">
-                {getScoreMessage(scoreData.splitScore)}
+                {getScoreMessage(score.split_score)}
               </div>
             </div>
           </div>
@@ -64,9 +117,9 @@ export default function Score() {
           <div className="bg-guinness-gold/5 rounded-lg p-4">
             <h2 className="text-lg font-bold text-guinness-gold mb-2">Your Split G</h2>
             <div className="aspect-square bg-guinness-black rounded-lg overflow-hidden">
-              {scoreData.visualizationImages.split ? (
+              {score.split_image_url ? (
                 <img 
-                  src={`data:image/jpeg;base64,${scoreData.visualizationImages.split}`}
+                  src={score.split_image_url}
                   alt="Split analysis"
                   className="w-full h-full object-contain"
                 />
@@ -82,9 +135,9 @@ export default function Score() {
           <div className="bg-guinness-gold/5 rounded-lg p-4">
             <h2 className="text-lg font-bold text-guinness-gold mb-2">Your Pint</h2>
             <div className="aspect-square bg-guinness-black rounded-lg overflow-hidden">
-              {scoreData.visualizationImages.pint ? (
+              {score.pint_image_url ? (
                 <img 
-                  src={`data:image/jpeg;base64,${scoreData.visualizationImages.pint}`}
+                  src={score.pint_image_url}
                   alt="Original pour"
                   className="w-full h-full object-contain"
                 />
@@ -97,14 +150,47 @@ export default function Score() {
           </div>
         </div>
 
-        {/* Try Again Button */}
-        <div className="mt-8 text-center">
+        {/* Action Buttons */}
+        <div className="mt-12 flex flex-col items-center gap-4 md:flex-row md:justify-center md:gap-6">
           <button
-            onClick={() => navigate('/')}
-            className="px-8 py-3 bg-guinness-gold text-guinness-black rounded-full font-bold hover:bg-guinness-tan transition-colors duration-300 text-lg"
+            onClick={handleShare}
+            className="w-64 px-8 py-4 bg-guinness-gold/20 text-guinness-gold rounded-full font-bold 
+                     hover:bg-guinness-gold/30 active:bg-guinness-gold/40 
+                     transition-all duration-300 text-lg
+                     flex items-center justify-center gap-2"
           >
-            Try Again
+            {shareSuccess ? (
+              <>
+                <span>Copied!</span>
+                <span className="text-xl">📋</span>
+              </>
+            ) : (
+              <>
+                <span>Share Score</span>
+                <span className="text-xl">🍺</span>
+              </>
+            )}
           </button>
+          
+          <Link
+            to="/"
+            className="w-64 px-8 py-4 bg-guinness-gold text-guinness-black rounded-full font-bold 
+                     hover:bg-guinness-tan active:bg-guinness-tan/90
+                     transition-all duration-300 text-lg
+                     flex items-center justify-center gap-2"
+          >
+            <span>Try Again</span>
+            <span className="text-xl">🎯</span>
+          </Link>
+
+          <div className="w-64">
+            <LeaderboardButton 
+              className="w-full px-8 py-4 bg-guinness-gold/10 text-guinness-tan rounded-full font-bold 
+                        hover:bg-guinness-gold/20 active:bg-guinness-gold/30
+                        transition-all duration-300 text-lg
+                        flex items-center justify-center gap-2"
+            />
+          </div>
         </div>
       </div>
     </main>

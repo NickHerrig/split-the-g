@@ -3,18 +3,25 @@ import { useLoaderData, Link } from "react-router";
 import { supabase } from "~/utils/supabase";
 
 type LeaderboardEntry = {
-  id: number;
-  user_name: string;
-  score: number;
+  id: string;
+  username: string;
+  split_score: number;
   created_at: string;
+  split_image_url: string;
 };
 
 export const loader: LoaderFunction = async () => {
   const { data, error } = await supabase
-    .from('leaderboard')
-    .select('*')
-    .order('score', { ascending: false })
-    .limit(100);
+    .from('scores')
+    .select(`
+      id,
+      username,
+      split_score,
+      created_at,
+      split_image_url
+    `)
+    .order('split_score', { ascending: false })
+    .limit(15);
 
   if (error) throw error;
 
@@ -25,46 +32,57 @@ export default function Leaderboard() {
   const { entries } = useLoaderData<{ entries: LeaderboardEntry[] }>();
 
   return (
-    <main className="min-h-screen bg-guinness-black">
-      <div className="container mx-auto p-4 md:p-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-guinness-gold">Top Splits</h1>
-          <Link 
-            to="/"
-            className="px-4 py-2 bg-guinness-gold text-guinness-black rounded-lg hover:bg-guinness-tan transition-colors"
-          >
-            Try Your Split
-          </Link>
+    <main className="min-h-screen bg-guinness-black py-8">
+      <div className="container mx-auto px-4">
+        <h1 className="text-3xl font-bold text-guinness-gold text-center mb-8">
+          Top Splits
+        </h1>
+        
+        <div className="max-w-3xl mx-auto">
+          {entries.map((entry, index) => (
+            <Link
+              key={entry.id}
+              to={`/score/${entry.id}`}
+              className="block mb-4 bg-guinness-gold/10 rounded-lg hover:bg-guinness-gold/20 transition-colors"
+            >
+              <div className="flex items-center p-4">
+                <div className="text-2xl font-bold text-guinness-gold w-12">
+                  #{index + 1}
+                </div>
+
+                <div className="w-16 h-16 rounded-lg overflow-hidden bg-guinness-black/50 mr-4">
+                  <img
+                    src={entry.split_image_url}
+                    alt={`Split by ${entry.username}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+
+                <div className="flex-grow">
+                  <div className="text-lg font-semibold text-guinness-tan">
+                    {entry.username}
+                  </div>
+                  <div className="text-sm text-guinness-tan/60">
+                    {new Date(entry.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+
+                <div className="text-2xl font-bold text-guinness-gold ml-4">
+                  {entry.split_score.toFixed(2)}
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
 
-        <div className="bg-guinness-gold/10 rounded-xl p-6">
-          <table className="w-full">
-            <thead>
-              <tr className="text-guinness-gold border-b border-guinness-gold/20">
-                <th className="py-2 px-4 text-left">Rank</th>
-                <th className="py-2 px-4 text-left">Name</th>
-                <th className="py-2 px-4 text-right">Score</th>
-                <th className="py-2 px-4 text-right">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((entry, index) => (
-                <tr 
-                  key={entry.id}
-                  className="border-b border-guinness-gold/10 hover:bg-guinness-gold/5"
-                >
-                  <td className="py-3 px-4 text-guinness-cream">{index + 1}</td>
-                  <td className="py-3 px-4 text-guinness-cream">{entry.user_name}</td>
-                  <td className="py-3 px-4 text-right text-guinness-cream">
-                    {entry.score.toFixed(2)}
-                  </td>
-                  <td className="py-3 px-4 text-right text-guinness-tan">
-                    {new Date(entry.created_at).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="mt-8 text-center">
+          <Link
+            to="/"
+            className="inline-block px-6 py-3 bg-guinness-gold/10 hover:bg-guinness-gold/20 text-guinness-gold border border-guinness-gold/20 rounded-lg transition-colors"
+          >
+            Back to Split
+          </Link>
         </div>
       </div>
     </main>
