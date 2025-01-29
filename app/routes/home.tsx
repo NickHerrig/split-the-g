@@ -130,7 +130,7 @@ export default function Home() {
     
     setModelLoading(true);
     inferEngine
-      .startWorker("split-g-label-experiment", "6", "rf_KknWyvJ8ONXATuszsdUEuknA86p2")
+      .startWorker("split-g-label-experiment", "8", "rf_KknWyvJ8ONXATuszsdUEuknA86p2")
       .then((id) => setModelWorkerId(id));
   }, [inferEngine, modelLoading]);
 
@@ -189,7 +189,7 @@ export default function Home() {
         if (hasGlass && hasG) {
           setConsecutiveDetections(prev => prev + 1);
           
-          if (consecutiveDetections >= 6) {
+          if (consecutiveDetections >= 4) {
             setFeedbackMessage("Perfect! Processing your pour...");
             setIsProcessing(true);
             setIsSubmitting(true);
@@ -222,7 +222,7 @@ export default function Home() {
                           }
                           return; // Exit the detection loop
                         }
-                        if (consecutiveDetections >= 3) {
+                        if (consecutiveDetections >= 1) {
                           setFeedbackMessage("Hold still...");
                         } else {
                           setFeedbackMessage("Keep the glass centered...");
