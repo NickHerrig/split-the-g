@@ -34,9 +34,17 @@ export default function Leaderboard() {
   return (
     <main className="min-h-screen bg-guinness-black py-8">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold text-guinness-gold text-center mb-8">
-          Top Splits
-        </h1>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-guinness-gold mb-4">
+            Top Splits
+          </h1>
+          <Link
+            to="/"
+            className="text-guinness-gold hover:text-guinness-tan transition-colors inline-block"
+          >
+            ← Back to Split
+          </Link>
+        </div>
         
         <div className="max-w-3xl mx-auto">
           {entries.map((entry, index) => (

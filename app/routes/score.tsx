@@ -6,10 +6,12 @@ import { supabase } from "~/utils/supabase";
 import { LeaderboardButton } from "../components/LeaderboardButton";
 import { Link } from "react-router";
 import { useState } from "react";
+import { EmailModal } from '../components/EmailModal';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { splitId } = params;
 
+  // Get the initial score data
   const { data: score, error } = await supabase
     .from('scores')
     .select('*')
@@ -20,26 +22,33 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Score not found", { status: 404 });
   }
 
+  // Get the rank
   const { count: rank } = await supabase
     .from('scores')
     .select('*', { count: 'exact', head: true })
     .gte('split_score', score.split_score);
 
+  // Get total splits
   const { count: totalSplits } = await supabase
     .from('scores')
     .select('*', { count: 'exact', head: true });
 
-  return { score, rank, totalSplits };
+  // Simplified email modal visibility check - only based on database values
+  const showEmailModal = !score.email && !score.email_opted_out;
+
+  return { score, rank, totalSplits, showEmailModal };
 }
 
 export default function Score() {
-  const { score, rank, totalSplits } = useLoaderData<{ 
+  const { score, rank, totalSplits, showEmailModal } = useLoaderData<{ 
     score: Score; 
     rank: number;
     totalSplits: number;
+    showEmailModal: boolean;
   }>();
   const [shareSuccess, setShareSuccess] = useState(false);
-  
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(showEmailModal);
+
   const getScoreMessage = (score: number) => {
     if (score >= 4.70) return "Sláinte! 🏆 A Perfect Split!";
     if (score >= 3.75) return "Beautiful Split! ⭐ Like a True Dubliner!";
@@ -193,6 +202,12 @@ export default function Score() {
           </div>
         </div>
       </div>
+
+      <EmailModal
+        scoreId={score.id}
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+      />
     </main>
   );
 } 
