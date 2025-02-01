@@ -11,6 +11,10 @@ type LeaderboardEntry = {
 };
 
 export const loader: LoaderFunction = async () => {
+  // Calculate date 7 days ago
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
   const { data, error } = await supabase
     .from('scores')
     .select(`
@@ -20,7 +24,9 @@ export const loader: LoaderFunction = async () => {
       created_at,
       split_image_url
     `)
+    .gte('created_at', oneWeekAgo.toISOString())
     .order('split_score', { ascending: false })
+    .order('created_at', { ascending: false })
     .limit(15);
 
   if (error) throw error;
@@ -36,7 +42,7 @@ export default function Leaderboard() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-guinness-gold mb-4">
-            Top Splits
+            Top Splits This Week
           </h1>
           <Link
             to="/"

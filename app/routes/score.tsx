@@ -22,11 +22,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Score not found", { status: 404 });
   }
 
-  // Get the rank
-  const { count: rank } = await supabase
+  // Get scores that are higher than the current score
+  const { data: higherScores } = await supabase
     .from('scores')
-    .select('*', { count: 'exact', head: true })
-    .gte('split_score', score.split_score);
+    .select('split_score')
+    .gt('split_score', score.split_score);
+
+  const actualRank = (higherScores?.length ?? 0) + 1;
 
   // Get total splits
   const { count: totalSplits } = await supabase
@@ -36,7 +38,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   // Simplified email modal visibility check - only based on database values
   const showEmailModal = !score.email && !score.email_opted_out;
 
-  return { score, rank, totalSplits, showEmailModal };
+  return { score, rank: actualRank, totalSplits, showEmailModal };
 }
 
 export default function Score() {
