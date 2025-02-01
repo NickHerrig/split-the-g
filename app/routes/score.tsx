@@ -6,7 +6,7 @@ import { supabase } from "~/utils/supabase";
 import { LeaderboardButton } from "../components/LeaderboardButton";
 import { Link } from "react-router";
 import { useState } from "react";
-import { EmailModal } from '../components/EmailModal';
+import { EmailForm } from '../components/EmailForm';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { splitId } = params;
@@ -47,7 +47,11 @@ export default function Score() {
     showEmailModal: boolean;
   }>();
   const [shareSuccess, setShareSuccess] = useState(false);
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(showEmailModal);
+  const [isEmailFormVisible, setIsEmailFormVisible] = useState(showEmailModal);
+
+  const handleEmailFormComplete = () => {
+    setIsEmailFormVisible(false);
+  };
 
   const getScoreMessage = (score: number) => {
     if (score >= 4.70) return "Sláinte! 🏆 A Perfect Split!";
@@ -159,6 +163,13 @@ export default function Score() {
           </div>
         </div>
 
+        {/* Email Form */}
+        <EmailForm
+          scoreId={score.id}
+          show={isEmailFormVisible}
+          onComplete={handleEmailFormComplete}
+        />
+
         {/* Action Buttons */}
         <div className="mt-12 flex flex-col items-center gap-4 md:flex-row md:justify-center md:gap-6">
           <button
@@ -202,12 +213,6 @@ export default function Score() {
           </div>
         </div>
       </div>
-
-      <EmailModal
-        scoreId={score.id}
-        isOpen={isEmailModalOpen}
-        onClose={() => setIsEmailModalOpen(false)}
-      />
     </main>
   );
 } 
