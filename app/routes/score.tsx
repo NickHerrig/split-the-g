@@ -22,30 +22,64 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Score not found", { status: 404 });
   }
 
-  // Get scores that are higher than the current score
+  // Calculate date 7 days ago
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  // Get all-time higher scores
   const { data: higherScores } = await supabase
     .from('scores')
     .select('split_score')
     .gt('split_score', score.split_score);
 
-  const actualRank = (higherScores?.length ?? 0) + 1;
+  // Get weekly higher scores
+  const { data: weeklyHigherScores } = await supabase
+    .from('scores')
+    .select('split_score')
+    .gt('split_score', score.split_score)
+    .gte('created_at', oneWeekAgo.toISOString());
 
-  // Get total splits
+  // Get total splits (all-time)
   const { count: totalSplits } = await supabase
     .from('scores')
     .select('*', { count: 'exact', head: true });
 
+  // Get total splits this week
+  const { count: weeklyTotalSplits } = await supabase
+    .from('scores')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', oneWeekAgo.toISOString());
+
+  const allTimeRank = (higherScores?.length ?? 0) + 1;
+  const weeklyRank = (weeklyHigherScores?.length ?? 0) + 1;
+
   // Simplified email modal visibility check - only based on database values
   const showEmailModal = !score.email && !score.email_opted_out;
 
-  return { score, rank: actualRank, totalSplits, showEmailModal };
+  return { 
+    score, 
+    allTimeRank, 
+    weeklyRank,
+    totalSplits, 
+    weeklyTotalSplits,
+    showEmailModal 
+  };
 }
 
 export default function Score() {
-  const { score, rank, totalSplits, showEmailModal } = useLoaderData<{ 
+  const { 
+    score, 
+    allTimeRank, 
+    weeklyRank,
+    totalSplits, 
+    weeklyTotalSplits,
+    showEmailModal 
+  } = useLoaderData<{ 
     score: Score; 
-    rank: number;
+    allTimeRank: number;
+    weeklyRank: number;
     totalSplits: number;
+    weeklyTotalSplits: number;
     showEmailModal: boolean;
   }>();
   const [shareSuccess, setShareSuccess] = useState(false);
@@ -66,7 +100,8 @@ export default function Score() {
     const scoreUrl = `${window.location.origin}/score/${score.id}`;
     
     return `🍺 Split G Score: ${score.split_score.toFixed(2)}/5.0\n` +
-           `Rank: #${rank} of ${totalSplits}\n` +
+           `All-Time Rank: #${allTimeRank} of ${totalSplits}\n` +
+           `Weekly Rank: #${weeklyRank} of ${weeklyTotalSplits}\n` +
            `Check it out: ${scoreUrl}`;
   };
 
@@ -110,8 +145,9 @@ export default function Score() {
               <div className="text-xl text-guinness-tan mb-2">
                 {score.username || 'Anonymous Pourer'}
               </div>
-              <div className="text-lg text-guinness-tan/80 mb-4">
-                Rank #{rank} of {totalSplits} Splits
+              <div className="text-lg text-guinness-tan/80 mb-4 flex flex-col gap-1">
+                <div>All-Time: #{allTimeRank} of {totalSplits}</div>
+                <div>This Week: #{weeklyRank} of {weeklyTotalSplits}</div>
               </div>
               <div className="text-6xl md:text-7xl font-bold text-guinness-gold mb-2">
                 {score.split_score.toFixed(2)}
