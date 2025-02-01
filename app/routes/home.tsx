@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState, useMemo } from "react";
-import { useNavigate, useFetcher, useSubmit, useActionData, redirect } from "react-router";
-import Webcam from "react-webcam";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useSubmit, useActionData, redirect } from "react-router";
 import { RoboflowLogo } from "../components/RoboflowLogo";
 import { PintGlassOverlay } from "../components/PintGlassOverlay";
 import type { ActionFunctionArgs } from "react-router";
@@ -97,11 +96,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function Home() {
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const [isCameraReady, setIsCameraReady] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const webcamRef = useRef<Webcam>(null);
   const navigate = useNavigate();
-  const fetcher = useFetcher();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const submit = useSubmit();
@@ -114,7 +110,7 @@ export default function Home() {
     if (typeof window === 'undefined') return;
     
     async function initInference() {
-      const { InferenceEngine, CVImage } = await import('inferencejs');
+      const { InferenceEngine } = await import('inferencejs');
       setInferEngine(new InferenceEngine());
     }
     
@@ -179,12 +175,8 @@ export default function Home() {
         const img = new CVImage(videoRef.current);
         const predictions = await inferEngine.infer(modelWorkerId, img);
         
-        const hasGlass = predictions.some(pred => 
-          pred.class === "glass"
-        );
-        const hasG = predictions.some(pred => 
-          pred.class === "G"
-        );
+        const hasGlass = predictions.some(pred => pred.class === "glass");
+        const hasG = predictions.some(pred => pred.class === "G");
 
         if (hasGlass && hasG) {
           setConsecutiveDetections(prev => prev + 1);
@@ -210,99 +202,58 @@ export default function Home() {
               stream?.getTracks().forEach(track => track.stop());
               setIsCameraActive(false);
 
-                            // Submit form data to action
-                            const formData = new FormData();
-                            formData.append('image', base64Image);
-                            
-                            submit(formData, {
-                              method: 'post',
-                              action: '/?index',
-                              encType: 'multipart/form-data',
-                            });
-                          }
-                          return; // Exit the detection loop
-                        }
-                        if (consecutiveDetections >= 1) {
-                          setFeedbackMessage("Hold still...");
-                        } else {
-                          setFeedbackMessage("Keep the glass centered...");
-                        }
-                      } else {
-                        setConsecutiveDetections(0);
-                        if (!hasGlass) {
-                          setFeedbackMessage("Show your pint glass");
-                        } else if (!hasG) {
-                          setFeedbackMessage("Make sure the G pattern is visible");
-                        }
-                      }
-                    } catch (error) {
-                      console.error('Detection error:', error);
-                    }
-                  };
+              // Submit form data to action
+              const formData = new FormData();
+              formData.append('image', base64Image);
+              
+              submit(formData, {
+                method: 'post',
+                action: '/?index',
+                encType: 'multipart/form-data',
+              });
+            }
+            return; // Exit the detection loop
+          }
+          if (consecutiveDetections >= 1) {
+            setFeedbackMessage("Hold still...");
+          } else {
+            setFeedbackMessage("Keep the glass centered...");
+          }
+        } else {
+          setConsecutiveDetections(0);
+          if (!hasGlass) {
+            setFeedbackMessage("Show your pint glass");
+          } else if (!hasG) {
+            setFeedbackMessage("Make sure the G pattern is visible");
+          }
+        }
+      } catch (error) {
+        console.error('Detection error:', error);
+      }
+    };
 
-                  const intervalId = setInterval(detectFrame, 500);
-                  return () => clearInterval(intervalId);
-                }, [modelWorkerId, isCameraActive, inferEngine, isVideoReady, consecutiveDetections, submit]);
-              
-                // Add effect to handle action response
-                useEffect(() => {
-                  if (actionData && 'success' in actionData) {
-                    setIsSubmitting(false);
-                    if (actionData.success) {
-                      navigate('/score', { 
-                        state: {
-                          splitScore: actionData.splitScore,
-                          visualizationImages: actionData.visualizationImages
-                        }
-                      });
-                    } else {
-                      console.error('Action failed:', actionData.error);
-                      setFeedbackMessage("Analysis failed. Please try again.");
-                      setIsCameraActive(false);
-                    }
-                  }
-                }, [actionData, navigate]);
-              
-                useEffect(() => {
-                  if (fetcher.data?.success) {
-                    // Store the image in sessionStorage
-                    if (videoRef.current && canvasRef.current) {
-                      const canvas = canvasRef.current;
-                      const imageData = canvas.toDataURL('image/jpeg');
-                      sessionStorage.setItem('captured-pour-image', imageData);
-                    }
-                    setIsCameraActive(false);
-                    navigate('/score');
-                  }
-                }, [fetcher.data, navigate]);
-              
-                useEffect(() => {
-                  if (isCameraActive) {
-                    setCapturedImage(null);
-                  }
-                }, [isCameraActive]);
-              
-                const videoConstraints = {
-                  facingMode: { ideal: "environment" },
-                  width: 720,
-                  height: 960,
-                };
-              
-                const handleCapture = async () => {
-                  if (webcamRef.current) {
-                    const imageSrc = webcamRef.current.getScreenshot();
-                    if (imageSrc) {
-                      setCapturedImage(imageSrc);
-                      
-                      const formData = new FormData();
-                      const base64Image = imageSrc.replace(/^data:image\/\w+;base64,/, '');
-                      formData.append('image', base64Image);
-                      formData.append('imageUrl', imageSrc);
-              
-                      fetcher.submit(formData, { method: 'post' });
-                    }
-                  }
-                };
+    const intervalId = setInterval(detectFrame, 500);
+    return () => clearInterval(intervalId);
+  }, [modelWorkerId, isCameraActive, inferEngine, isVideoReady, consecutiveDetections, submit]);
+
+  // Add effect to handle action response
+  useEffect(() => {
+    if (actionData && 'success' in actionData) {
+      setIsSubmitting(false);
+      if (actionData.success) {
+        navigate('/score', { 
+          state: {
+            splitScore: actionData.splitScore,
+            visualizationImages: actionData.visualizationImages
+          }
+        });
+      } else {
+        console.error('Action failed:', actionData.error);
+        setFeedbackMessage("Analysis failed. Please try again.");
+        setIsCameraActive(false);
+      }
+    }
+  }, [actionData, navigate]);
 
   return (
     <main className="flex items-center justify-center min-h-screen bg-guinness-black text-guinness-cream">
@@ -364,8 +315,7 @@ export default function Home() {
                     className="absolute inset-0 w-full h-full object-cover"
                     autoPlay
                     playsInline
-                    onLoadedMetadata={() => setIsCameraReady(true)}
-                    onCanPlay={() => setIsVideoReady(true)}
+                    onLoadedMetadata={() => setIsVideoReady(true)}
                     onError={(err) => {
                       console.error('Camera error:', err);
                       setIsCameraActive(false);
