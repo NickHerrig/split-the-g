@@ -8,10 +8,20 @@ import { Link } from "react-router";
 import { useState } from "react";
 import { EmailForm } from '../components/EmailForm';
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const { splitId } = params;
 
-  // Get the initial score data
+  // Get the session cookie
+  const cookieHeader = request.headers.get('Cookie') || '';
+  const cookies = Object.fromEntries(
+    cookieHeader.split('; ').map(c => {
+      const [key, ...v] = c.split('=');
+      return [key, v.join('=')];
+    })
+  );
+  const sessionId = cookies['split-g-session'];
+
+  // Get the score data
   const { data: score, error } = await supabase
     .from('scores')
     .select('*')
@@ -53,8 +63,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const allTimeRank = (higherScores?.length ?? 0) + 1;
   const weeklyRank = (weeklyHigherScores?.length ?? 0) + 1;
 
-  // Simplified email modal visibility check - only based on database values
-  const showEmailModal = !score.email && !score.email_opted_out;
+  // Check if the user owns this score
+  const isOwner = sessionId === score.session_id;
+
+  // Only show email modal if user is the owner and hasn't submitted email or opted out
+  const showEmailModal = isOwner && !score.email && !score.email_opted_out;
 
   return { 
     score, 
@@ -62,7 +75,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
     weeklyRank,
     totalSplits, 
     weeklyTotalSplits,
-    showEmailModal 
+    showEmailModal,
+    isOwner
   };
 }
 
@@ -73,7 +87,8 @@ export default function Score() {
     weeklyRank,
     totalSplits, 
     weeklyTotalSplits,
-    showEmailModal 
+    showEmailModal,
+    isOwner
   } = useLoaderData<{ 
     score: Score; 
     allTimeRank: number;
@@ -81,6 +96,7 @@ export default function Score() {
     totalSplits: number;
     weeklyTotalSplits: number;
     showEmailModal: boolean;
+    isOwner: boolean;
   }>();
   const [shareSuccess, setShareSuccess] = useState(false);
   const [isEmailFormVisible, setIsEmailFormVisible] = useState(showEmailModal);

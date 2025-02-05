@@ -10,6 +10,7 @@ interface EmailFormProps {
 export function EmailForm({ scoreId, show, onComplete }: EmailFormProps) {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Try to get email from cookie
@@ -22,6 +23,7 @@ export function EmailForm({ scoreId, show, onComplete }: EmailFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     try {
       const response = await fetch('/api/email', {
@@ -29,11 +31,16 @@ export function EmailForm({ scoreId, show, onComplete }: EmailFormProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, scoreId }),
+        body: JSON.stringify({ 
+          email, 
+          scoreId,
+          sessionId: Cookies.get('split-g-session') // Include session ID in request
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save email');
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to save email');
       }
 
       // Save email in cookie (expires in 365 days)
@@ -41,6 +48,7 @@ export function EmailForm({ scoreId, show, onComplete }: EmailFormProps) {
       onComplete(); // Hide form after successful submission
     } catch (error) {
       console.error('Error saving email:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -55,16 +63,19 @@ export function EmailForm({ scoreId, show, onComplete }: EmailFormProps) {
         },
         body: JSON.stringify({ 
           scoreId, 
-          emailOptedOut: true 
+          emailOptedOut: true,
+          sessionId: Cookies.get('split-g-session') // Include session ID in request
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save opt-out status');
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to save opt-out status');
       }
       onComplete(); // Hide form after opting out
     } catch (error) {
       console.error('Error opting out:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
     }
   };
 
@@ -113,6 +124,12 @@ export function EmailForm({ scoreId, show, onComplete }: EmailFormProps) {
           </button>
         </div>
       </form>
+
+      {error && (
+        <div className="text-red-600 text-sm mt-2 text-center">
+          {error}
+        </div>
+      )}
 
       <div className="mt-6 text-center text-xs text-guinness-black/60">
         <p><a href="https://roboflow.com" target="_blank" rel="noopener noreferrer" className="hover:text-guinness-gold transition-colors">Powered by Roboflow</a></p>

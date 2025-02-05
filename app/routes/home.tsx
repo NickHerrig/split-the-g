@@ -22,6 +22,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const base64Image = formData.get('image') as string;
   const username = generateBeerUsername();
+  const sessionId = crypto.randomUUID();
 
   try {
     const response = await fetch('https://detect.roboflow.com/infer/workflows/hunter-diminick/split-g-scoring', {
@@ -62,7 +63,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const splitImageUrl = await uploadImage(splitImage, 'split-images');
     const pintImageUrl = await uploadImage(pintImage, 'pint-images');
 
-    // Create database record
+    // Create database record with session_id
     const { data: score, error: dbError } = await supabase
       .from('scores')
       .insert({
@@ -70,15 +71,22 @@ export async function action({ request }: ActionFunctionArgs) {
         split_image_url: splitImageUrl,
         pint_image_url: pintImageUrl,
         username: username,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        session_id: sessionId
       })
       .select()
       .single();
 
     if (dbError) throw dbError;
 
+    // Set the session cookie before redirecting
+    const headers = new Headers();
+    headers.append('Set-Cookie', `split-g-session=${sessionId}; Path=/; Max-Age=31536000; SameSite=Lax`);
+
     // Redirect to the score page with the ID
-    return redirect(`/score/${score.id}`);
+    return redirect(`/score/${score.id}`, {
+      headers
+    });
 
   } catch (error) {
     console.error('Error processing image:', error);
