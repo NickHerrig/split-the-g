@@ -277,22 +277,18 @@ export default function Home() {
             <h1 className="text-4xl md:text-5xl font-bold text-guinness-gold tracking-wide">
               Split the G
             </h1>
-            <div className="flex items-center gap-2 text-guinness-tan text-sm">
-              <span>Powered by</span>
-              <a 
-                href="https://roboflow.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-guinness-gold hover:text-guinness-cream transition-colors duration-300"
-              >
-                <RoboflowLogo className="h-5 w-5" />
-                <span className="font-medium">Roboflow</span>
-              </a>
-            </div>
             <div className="w-32 h-0.5 bg-guinness-gold my-2"></div>
             <p className="text-lg md:text-xl text-guinness-tan font-light max-w-sm md:max-w-md mx-auto">
               Put your Guinness splitting technique to the test! 
             </p>
+            <a 
+              href="https://blog.roboflow.com/split-the-g-app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-guinness-gold hover:text-guinness-cream transition-colors duration-300"
+            >
+              How we built this →
+            </a>
             <LeaderboardButton />
           </header>
 
@@ -368,6 +364,19 @@ export default function Home() {
                 </button>
               )}
             </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-guinness-tan text-sm">
+            <span>Powered by</span>
+            <a 
+              href="https://roboflow.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-guinness-gold hover:text-guinness-cream transition-colors duration-300"
+            >
+              <RoboflowLogo className="h-5 w-5" />
+              <span className="font-medium">Roboflow</span>
+            </a>
           </div>
         </div>
       )}
