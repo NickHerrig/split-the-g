@@ -171,6 +171,36 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // HUNTER CHANGES to add submit button
+
+const fileInputRef = useRef<HTMLInputElement>(null);
+
+const handleUploadClick = () => {
+  fileInputRef.current?.click();
+};
+
+const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const imageDataUrl = reader.result as string;
+    const base64Image = imageDataUrl.replace(/^data:image\/\w+;base64,/, '');
+
+    const formData = new FormData();
+    formData.append('image', base64Image);
+
+    // Reuse your existing submit function
+    submit(formData, {
+      method: 'post',
+      action: '/?index',
+      encType: 'multipart/form-data'
+    });
+  };
+  reader.readAsDataURL(file);
+};
+
   // Update the detection loop with feedback logic
   useEffect(() => {
     if (!isClient || !inferEngine || !modelWorkerId || !isCameraActive || !isVideoReady) return;
