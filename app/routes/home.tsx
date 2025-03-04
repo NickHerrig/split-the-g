@@ -263,6 +263,27 @@ export default function Home() {
     }
   }, [actionData, navigate]);
 
+  // Handle file input change
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64Image = reader.result?.toString().replace(/^data:image\/\w+;base64,/, '');
+      if (base64Image) {
+        const formData = new FormData();
+        formData.append('image', base64Image);
+        submit(formData, {
+          method: 'post',
+          action: '/?index',
+          encType: 'multipart/form-data',
+        });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <main className="flex items-center justify-center min-h-screen bg-guinness-black text-guinness-cream">
       {isSubmitting ? (
@@ -279,7 +300,7 @@ export default function Home() {
             </h1>
             <div className="w-32 h-0.5 bg-guinness-gold my-2"></div>
             <p className="text-lg md:text-xl text-guinness-tan font-light max-w-sm md:max-w-md mx-auto">
-              Put your Guinness splitting technique to the test! 
+              Put your Guinness splitting technique to the test!
             </p>
             <a 
               href="https://blog.roboflow.com/split-the-g-app/"
@@ -334,67 +355,77 @@ export default function Home() {
                   </div>
                 </div>
               ) : (
-                <button
-                  onClick={() => setIsCameraActive(true)}
-                  className="w-full h-full flex flex-col items-center justify-center gap-4 text-guinness-gold hover:text-guinness-tan transition-colors duration-300"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-16 md:h-20 w-16 md:w-20"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                <>
+                  <button
+                    onClick={() => setIsCameraActive(true)}
+                    className="w-full h-full flex flex-col items-center justify-center gap-4 text-guinness-gold hover:text-guinness-tan transition-colors duration-300"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  <span className="text-lg md:text-xl font-medium">
-                    Start Analysis
-                  </span>
-                </button>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-16 md:h-20 w-16 md:w-20"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                    <span className="text-lg md:text-xl font-medium">
+                      Start Analysis
+                    </span>
+                  </button>
+                </>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-guinness-tan text-sm">
-            <span>Powered by</span>
-            <a 
-              href="https://roboflow.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-guinness-gold hover:text-guinness-cream transition-colors duration-300"
-            >
-              <RoboflowLogo className="h-5 w-5" />
-              <span className="font-medium">Roboflow</span>
-            </a>
+          <button
+            onClick={() => document.getElementById('file-upload')?.click()}
+            className="w-3/4 mt-4 py-2 px-4 bg-guinness-gold text-guinness-black rounded-lg hover:bg-guinness-tan transition-colors duration-300"
+          >
+            Upload an Image
+          </button>
+          <input
+            id="file-upload"
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          <div className="mt-8 text-guinness-tan text-sm">
+            <h2 className="text-lg font-bold">How to enter the Split-the-G contest:</h2>
+            <p>Follow the below steps before 11:59pm PST March 17, 2025.</p>
+            <ol className="list-decimal list-inside mt-2">
+              <li><strong>Receive a score</strong>: Hit the <strong>Start Analysis</strong> button on the website, aim your camera at the pint glass to capture an image, and let the website generate your score (the closer you are to the middle of the G logo, the better the score).</li>
+              <li><strong>Submit your score</strong>: Hit the <strong>Submit score</strong> button to submit your score to the leaderboard, fill out your contact information, and hit the <strong>Enter the contest</strong> button.</li>
+              <li><strong>All done!</strong></li>
+            </ol>
+
+            <h2 className="text-lg font-bold mt-4">Contest Rules:</h2>
+            <ul className="list-disc list-inside mt-2">
+              <li>Entry Period: Contest begins January 1, 2025 and ends 11:59pm PST March 17, 2025.</li>
+              <li>Prize: Commemorative item!</li>
+              <li>Winner Selection: The winner will be randomly selected from all eligible entries.</li>
+              <li>Eligibility: Must submit email to enter.</li>
+              <li>Winner Notification: The winner will be notified via the email provided upon submission within 10 business days of the contest end date.</li>
+              <li>No Purchase Necessary: Entering the contest does not require any purchase.</li>
+              <li>Multiple Entries: Multiple entries are allowed, but each entry must be submitted separately.</li>
+              <li>Disqualification: Any attempt to manipulate the contest or submit fraudulent entries will result in disqualification.</li>
+              <li>Privacy: Your email and personal information will be used solely for the purpose of this contest and will not be shared with third parties.</li>
+              <li>Acceptance of Rules: By entering the contest, you agree to abide by these rules and the decisions of the contest organizers.</li>
+            </ul>
           </div>
-        </div>
-      )}
-
-      {actionData?.success && (
-        <div className="mt-4 p-4 bg-green-100 rounded-lg">
-          <h3 className="text-xl font-bold mb-2">Score: {actionData.score}</h3>
-          <p className="text-sm text-gray-600">
-            {parseFloat(actionData.score) >= 3.75 
-              ? "Split G detected! 🎉" 
-              : "Keep trying for the perfect split! 🎯"}
-          </p>
-        </div>
-      )}
-
-      {actionData?.error && (
-        <div className="mt-4 p-4 bg-red-100 rounded-lg">
-          <p className="text-red-600">{actionData.error}</p>
         </div>
       )}
     </main>
