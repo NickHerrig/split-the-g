@@ -298,6 +298,21 @@ export default function Home() {
             <h1 className="text-4xl md:text-5xl font-bold text-guinness-gold tracking-wide">
               Split the G
             </h1>
+            <div className="flex items-center gap-2 text-guinness-tan text-sm">
+              <span>Powered by</span>
+              <a
+                href="https://roboflow.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 transition-colors duration-300 hover:opacity-80" 
+                style={{ color: "#8315f9" }}
+
+                //className="flex items-center gap-1.5 text-guinness-gold hover:text-guinness-cream transition-colors duration-300"
+              >
+                <RoboflowLogo className="h-10 w-10" />
+                <span className="font-bold" style={{ fontSize: "22px" }}>Roboflow AI</span>
+              </a>
+            </div>
             <div className="w-32 h-0.5 bg-guinness-gold my-2"></div>
             <p className="text-lg md:text-xl text-guinness-tan font-light max-w-sm md:max-w-md mx-auto">
               Put your Guinness splitting technique to the test!
@@ -404,7 +419,7 @@ export default function Home() {
           />
 
           <div className="mt-8 text-guinness-tan text-sm">
-            <h2 className="text-lg font-bold">How to enter the Split-the-G contest:</h2>
+            <h2 className="text-lg font-bold">How to enter the Split the G contest:</h2>
             <p>Follow the below steps before 11:59pm PST March 17, 2025.</p>
             <ol className="list-decimal list-inside mt-2">
               <li><strong>Receive a score</strong>: Hit the <strong>Start Analysis</strong> button on the website, aim your camera at the pint glass to capture an image, and let the website generate your score (the closer you are to the middle of the G logo, the better the score).</li>
