@@ -31,7 +31,7 @@ function calculateSplitScore(splitResults: any): number {
   const splitTopY = normalizedSplit.y - (normalizedSplit.height / 2);
   const distanceFromCenter = Math.abs(splitTopY - 0.5);
   const normalizedDistance = Math.min(distanceFromCenter / 0.5, 1);
-  return 3.75 + (1.25 * (1 - normalizedDistance));
+  return 2.5 + (2.5 * (1 - normalizedDistance));
 }
 
 function calculateNonSplitScore(pintResults: any): number {
@@ -52,7 +52,7 @@ function calculateNonSplitScore(pintResults: any): number {
   const maxDistance = 0.5; 
   const normalizedDistance = Math.min(distanceFromCenter / maxDistance, 1);
   const decayFactor = Math.pow(1 - normalizedDistance, 2);
-  return 3.75 * decayFactor;
+  return 2.5 * decayFactor;
 }
 
 export function calculateScore(results: any): number {
