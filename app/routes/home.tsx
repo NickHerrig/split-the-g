@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useSubmit, useActionData, redirect } from "react-router";
+import { useNavigate, useSubmit, useActionData, redirect, useLocation } from "react-router";
 import { RoboflowLogo } from "../components/RoboflowLogo";
 import { PintGlassOverlay } from "../components/PintGlassOverlay";
 import type { ActionFunctionArgs } from "react-router";
@@ -45,16 +45,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const result = await response.json();
     
-    // Add validation for required data
     if (!result.outputs?.[0]) {
-      throw new Error('No outputs received from API');
+      return { success: false, error: "We couldn't find a Guinness glass in your image. Make sure the G pattern is clearly visible." };
     }
 
     const splitImage = result.outputs[0]['split image']?.[0]?.value;
     const pintImage = result.outputs[0]['pint image']?.value;
 
     if (!splitImage || !pintImage) {
-      throw new Error('Missing required image data from API response');
+      return { success: false, error: "We couldn't find a Guinness glass in your image. Make sure the G pattern is clearly visible." };
     }
 
     const splitScore = calculateScore(result.outputs[0]);
@@ -84,32 +83,24 @@ export async function action({ request }: ActionFunctionArgs) {
     headers.append('Set-Cookie', `split-g-session=${sessionId}; Path=/; Max-Age=31536000; SameSite=Lax`);
 
     // Redirect to the score page with the ID
-    return redirect(`/score/${score.id}`, {
-      headers
-    });
+    return { success: true, splitScore: splitScore, visualizationImages: result.outputs };
 
   } catch (error) {
     console.error('Error processing image:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    console.error('Detailed error:', JSON.stringify(error, null, 2));
-    
-    return { 
-      success: false, 
-      message: 'Failed to process image',
-      error: errorMessage,
-      status: 500
-    };
+    return { success: false, error: "Unable to analyze image" };
   }
 }
 
 export default function Home() {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const submit = useSubmit();
   const actionData = useActionData<typeof action>();
+  const location = useLocation();
   
   // Dynamically import and initialize inference engine
   const [inferEngine, setInferEngine] = useState<any>(null);
@@ -246,28 +237,33 @@ export default function Home() {
 
   // Add effect to handle action response
   useEffect(() => {
-    if (actionData && 'success' in actionData) {
+    if (actionData) {
       setIsSubmitting(false);
-      if (actionData.success) {
-        navigate('/score', { 
-          state: {
-            splitScore: actionData.splitScore,
-            visualizationImages: actionData.visualizationImages
-          }
-        });
+      if (!actionData.success) {
+        setAnalysisError(actionData.error);
       } else {
-        console.error('Action failed:', actionData.error);
-        setFeedbackMessage("Analysis failed. Please try again.");
-        setIsCameraActive(false);
+        // If successful, clear any existing error
+        setAnalysisError(null);
       }
     }
-  }, [actionData, navigate]);
+  }, [actionData]);
 
-  // Handle file input change
+  // Add effect to handle loading state reset on navigation
+  useEffect(() => {
+    // Reset loading states and error state when component mounts or URL changes
+    setIsUploading(false);
+    setIsSubmitting(false);
+    setAnalysisError(null);
+  }, [location.pathname, location.search]);
+
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  // Add the handleFileChange function inside the component
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setIsUploading(true);
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64Image = reader.result?.toString().replace(/^data:image\/\w+;base64,/, '');
@@ -280,13 +276,58 @@ export default function Home() {
           encType: 'multipart/form-data',
         });
       }
+      // Reset the file input
+      event.target.value = '';
     };
     reader.readAsDataURL(file);
   };
 
   return (
     <main className="flex items-center justify-center min-h-screen bg-guinness-black text-guinness-cream">
-      {isSubmitting ? (
+      {analysisError && (
+        <div className="fixed inset-0 bg-guinness-black/95 flex flex-col items-center justify-center gap-6 z-50">
+          <div className="text-center max-w-md px-6">
+            <svg 
+              className="mx-auto h-16 w-16 text-guinness-gold mb-4" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+              />
+            </svg>
+            <h3 className="text-xl font-bold text-guinness-gold mb-2">Analysis Failed</h3>
+            <p className="text-guinness-tan mb-6">{analysisError}</p>
+            <div className="flex flex-col gap-4">
+              <button
+                onClick={() => {
+                  setAnalysisError(null);
+                  setIsCameraActive(false);
+                  setIsUploading(false);
+                  setIsSubmitting(false);
+                }}
+                className="px-6 py-3 bg-guinness-gold text-guinness-black rounded-lg hover:bg-guinness-tan transition-colors duration-300"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={() => {
+                  setAnalysisError(null);
+                  navigate('/', { replace: true });
+                }}
+                className="px-6 py-3 bg-guinness-gold/10 text-guinness-gold rounded-lg hover:bg-guinness-gold/20 transition-colors duration-300"
+              >
+                Back to Home
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {(isSubmitting || isUploading) && !analysisError ? (
         <div className="fixed inset-0 bg-guinness-black/95 flex flex-col items-center justify-center gap-6 z-50">
           <div className="w-24 h-24 border-4 border-guinness-gold/20 border-t-guinness-gold rounded-full animate-spin"></div>
           <p className="text-guinness-gold text-xl font-medium">Analyzing your split...</p>
