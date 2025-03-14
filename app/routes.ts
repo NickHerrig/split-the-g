@@ -9,4 +9,5 @@ export default [
   route("score/:splitId", "./routes/score.tsx"),
   route("leaderboard", "./routes/leaderboard.tsx"),
   route("api/email", "./routes/email.tsx"),
+  route("collage", "./routes/collage.tsx"), 
 ] satisfies RouteConfig;
