@@ -36,18 +36,22 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-  // Get all-time higher scores
-  const { data: higherScores } = await supabase
+  // Get count of all-time higher scores
+  const { count: higherScoresCount, error: higherScoresError } = await supabase
     .from('scores')
-    .select('split_score')
+    .select('*', { count: 'exact', head: true })
     .gt('split_score', score.split_score);
 
-  // Get weekly higher scores
-  const { data: weeklyHigherScores } = await supabase
+  if (higherScoresError) console.error('Error getting higher scores:', higherScoresError);
+
+  // Get count of weekly higher scores
+  const { count: weeklyHigherScoresCount, error: weeklyHigherScoresError } = await supabase
     .from('scores')
-    .select('split_score')
+    .select('*', { count: 'exact', head: true })
     .gt('split_score', score.split_score)
     .gte('created_at', oneWeekAgo.toISOString());
+
+  if (weeklyHigherScoresError) console.error('Error getting weekly higher scores:', weeklyHigherScoresError);
 
   // Get total splits (all-time)
   const { count: totalSplits } = await supabase
@@ -60,8 +64,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     .select('*', { count: 'exact', head: true })
     .gte('created_at', oneWeekAgo.toISOString());
 
-  const allTimeRank = (higherScores?.length ?? 0) + 1;
-  const weeklyRank = (weeklyHigherScores?.length ?? 0) + 1;
+  const allTimeRank = (higherScoresCount ?? 0) + 1;
+  const weeklyRank = (weeklyHigherScoresCount ?? 0) + 1;
 
   // Check if the user owns this score
   const isOwner = sessionId === score.session_id;
