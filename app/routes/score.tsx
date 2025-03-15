@@ -141,6 +141,15 @@ export default function Score() {
     }
   };
 
+  const formatLocation = (score: Score) => {
+    const parts = [];
+    if (score.city) parts.push(score.city);
+    if (score.region) parts.push(score.region);
+    if (score.country) parts.push(score.country);
+    
+    return parts.length > 0 ? parts.join(', ') : 'Unknown location';
+  };
+
   return (
     <main className="min-h-screen bg-guinness-black">
       <div className="container mx-auto p-4 md:p-8">
@@ -160,6 +169,9 @@ export default function Score() {
             <div className="flex flex-col items-center">
               <div className="text-xl text-guinness-tan mb-2">
                 {score.username || 'Anonymous Pourer'}
+              </div>
+              <div className="text-sm text-guinness-tan/80 mb-4">
+                {formatLocation(score)}
               </div>
               <div className="text-lg text-guinness-tan/80 mb-4 flex flex-col gap-1">
                 <div>All-Time: #{allTimeRank} of {totalSplits}</div>

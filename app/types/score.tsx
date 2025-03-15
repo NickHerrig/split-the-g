@@ -7,4 +7,8 @@ export type Score = {
     username: string;
     email?: string;
     email_opted_out?: boolean;
+    city?: string;
+    region?: string;
+    country?: string;
+    country_code?: string;
   }

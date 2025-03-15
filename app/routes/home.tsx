@@ -9,6 +9,7 @@ import { supabase } from "~/utils/supabase";
 import { LeaderboardButton } from "../components/LeaderboardButton";
 import { SubmissionsButton } from "../components/SubmissionsButton";
 import { generateBeerUsername } from "~/utils/usernameGenerator";
+import { getLocationData } from "~/utils/locationService";
 
 const isClient = typeof window !== "undefined";
 
@@ -99,7 +100,10 @@ export async function action({ request }: ActionFunctionArgs) {
     const splitImageUrl = await uploadImage(splitImage, "split-images");
     const pintImageUrl = await uploadImage(pintImage, "pint-images");
 
-    // Create database record with session_id
+    // Get location data
+    const locationData = await getLocationData();
+    
+    // Create database record with session_id and location
     const { data: score, error: dbError } = await supabase
       .from("scores")
       .insert({
@@ -109,6 +113,10 @@ export async function action({ request }: ActionFunctionArgs) {
         username: username,
         created_at: new Date().toISOString(),
         session_id: sessionId,
+        city: locationData.city,
+        region: locationData.region,
+        country: locationData.country,
+        country_code: locationData.country_code
       })
       .select()
       .single();

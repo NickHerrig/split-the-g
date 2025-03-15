@@ -8,6 +8,11 @@ type Submission = {
   split_image_url: string;
   pint_image_url: string;
   created_at: string;
+  city?: string;
+  region?: string;
+  country?: string;
+  country_code?: string;
+  split_score: number;
 };
 
 export const loader: LoaderFunction = async () => {
@@ -19,7 +24,12 @@ export const loader: LoaderFunction = async () => {
       username,
       split_image_url,
       pint_image_url,
-      created_at
+      created_at,
+      city,
+      region,
+      country,
+      country_code,
+      split_score
     `
     )
     .order("created_at", { ascending: false })
@@ -32,6 +42,26 @@ export const loader: LoaderFunction = async () => {
 
 export default function Collage() {
   const { submissions } = useLoaderData<{ submissions: Submission[] }>();
+
+  const formatLocation = (submission: Submission) => {
+    const parts = [];
+    if (submission.city) parts.push(submission.city);
+    if (submission.region) parts.push(submission.region);
+    if (submission.country_code) parts.push(submission.country_code);
+    
+    return parts.length > 0 ? parts.join(', ') : '';
+  };
+
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
     <main className="min-h-screen bg-guinness-black py-8">
@@ -64,12 +94,18 @@ export default function Collage() {
                   />
                 </div>
                 <div className="bg-guinness-black/80 p-3 mt-2 rounded-lg backdrop-blur-sm">
-                  <div className="text-lg font-semibold text-guinness-tan">
-                    {submission.username}
+                  <div className="text-lg font-semibold text-guinness-tan flex justify-between items-center">
+                    <span>{submission.username}</span>
+                    <span className="text-guinness-gold">{submission.split_score.toFixed(2)}/5.0</span>
                   </div>
                   <div className="text-sm text-guinness-tan/60">
-                    {new Date(submission.created_at).toLocaleDateString()}
+                    {formatDateTime(submission.created_at)}
                   </div>
+                  {formatLocation(submission) && (
+                    <div className="text-xs text-guinness-tan/40 mt-1">
+                      📍 {formatLocation(submission)}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
