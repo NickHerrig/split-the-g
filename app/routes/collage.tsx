@@ -68,7 +68,7 @@ export default function Collage() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-guinness-gold mb-4">
-            Recent Submissions
+            The World's Largest Split the G Contest
           </h1>
           <Link
             to="/"
