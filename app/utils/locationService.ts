@@ -8,7 +8,7 @@ type LocationData = {
   country_code: string | null;
 };
 
-export async function getLocationData(): Promise<LocationData> {
+export async function getLocationData(ipAddress?: string): Promise<LocationData> {
   try {
     // Check if API key is available
     if (!IPAPI_KEY) {
@@ -16,7 +16,12 @@ export async function getLocationData(): Promise<LocationData> {
       return { city: null, region: null, country: null, country_code: null };
     }
     
-    const response = await fetch(`https://ipapi.co/json/?key=${IPAPI_KEY}`);
+    // Use the provided IP address or let ipapi.co determine it
+    const apiUrl = ipAddress 
+      ? `https://ipapi.co/${ipAddress}/json/?key=${IPAPI_KEY}`
+      : `https://ipapi.co/json/?key=${IPAPI_KEY}`;
+    
+    const response = await fetch(apiUrl);
     
     if (!response.ok) {
       console.error('Failed to fetch location data:', response.statusText);

@@ -29,6 +29,21 @@ export async function action({ request }: ActionFunctionArgs) {
   const username = generateBeerUsername();
   const sessionId = crypto.randomUUID();
 
+  console.log("Request headers:", Object.fromEntries(request.headers.entries()));
+
+  // Prioritize Fly.io headers since we're using Fly hosting
+  const clientIP = request.headers.get('Fly-Client-IP') || 
+                   request.headers.get('fly-client-ip') ||
+                   request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                   request.headers.get('x-real-ip') || 
+                   request.headers.get('cf-connecting-ip') ||
+                   request.headers.get('x-client-ip') ||
+                   request.headers.get('fastly-client-ip') ||
+                   'unknown';
+
+  console.log("Detected client IP:", clientIP);
+  console.log("Using fly-client-ip:", request.headers.get('fly-client-ip'));
+
   try {
     const response = await fetch(
       "https://detect.roboflow.com/infer/workflows/hunter-diminick/split-g-scoring",
@@ -52,7 +67,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     const result = await response.json();
-    console.log("API Response:", JSON.stringify(result, null, 2));
+    // console.log("API Response:", JSON.stringify(result, null, 2));
 
     // Check specifically in pint results for G class
     const pintPredictions =
@@ -60,7 +75,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const hasG = pintPredictions.some((pred: any) => pred.class === "G");
 
     if (!hasG) {
-      console.log("No G detected in pint results");
+      // console.log("No G detected in pint results");
       return {
         success: false,
         error: "No G detected",
@@ -71,26 +86,26 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Add validation for required data
     if (!result.outputs?.[0]) {
-      console.log("No outputs in response");
+      // console.log("No outputs in response");
       throw new Error("No outputs received from API");
     }
 
     const splitImageData = result.outputs[0]["split image"];
     const pintImageData = result.outputs[0]["pint image"];
 
-    console.log("Split Image Data:", splitImageData);
-    console.log("Pint Image Data:", pintImageData);
+    // console.log("Split Image Data:", splitImageData);
+    // console.log("Pint Image Data:", pintImageData);
 
     const splitImage = splitImageData?.[0]?.value;
     const pintImage = pintImageData?.value;
 
     if (!splitImage || !pintImage) {
-      console.log(
-        "Missing image data. Split Image:",
-        !!splitImage,
-        "Pint Image:",
-        !!pintImage
-      );
+      // console.log(
+      //   "Missing image data. Split Image:",
+      //   !!splitImage,
+      //   "Pint Image:",
+      //   !!pintImage
+      // );
       throw new Error("Missing required image data from API response");
     }
 
@@ -100,8 +115,8 @@ export async function action({ request }: ActionFunctionArgs) {
     const splitImageUrl = await uploadImage(splitImage, "split-images");
     const pintImageUrl = await uploadImage(pintImage, "pint-images");
 
-    // Get location data
-    const locationData = await getLocationData();
+    // Get location data with client IP
+    const locationData = await getLocationData(clientIP);
     
     // Create database record with session_id and location
     const { data: score, error: dbError } = await supabase
@@ -147,6 +162,7 @@ export async function action({ request }: ActionFunctionArgs) {
       status: 500,
     };
   }
+
 }
 
 export default function Home() {
@@ -331,7 +347,7 @@ export default function Home() {
 
       // Check if there was an error due to no G detected
       if (actionData.error === "No G detected") {
-        console.log("Showing No G modal", actionData);
+        // console.log("Showing No G modal", actionData);
         setShowNoGModal(true);
       }
     }
