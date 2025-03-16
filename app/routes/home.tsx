@@ -30,20 +30,24 @@ export async function action({ request }: ActionFunctionArgs) {
   const username = generateBeerUsername();
   const sessionId = crypto.randomUUID();
 
-  console.log("Request headers:", Object.fromEntries(request.headers.entries()));
+  console.log(
+    "Request headers:",
+    Object.fromEntries(request.headers.entries())
+  );
 
   // Prioritize Fly.io headers since we're using Fly hosting
-  const clientIP = request.headers.get('Fly-Client-IP') || 
-                   request.headers.get('fly-client-ip') ||
-                   request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
-                   request.headers.get('x-real-ip') || 
-                   request.headers.get('cf-connecting-ip') ||
-                   request.headers.get('x-client-ip') ||
-                   request.headers.get('fastly-client-ip') ||
-                   'unknown';
+  const clientIP =
+    request.headers.get("Fly-Client-IP") ||
+    request.headers.get("fly-client-ip") ||
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip") ||
+    request.headers.get("cf-connecting-ip") ||
+    request.headers.get("x-client-ip") ||
+    request.headers.get("fastly-client-ip") ||
+    "unknown";
 
   console.log("Detected client IP:", clientIP);
-  console.log("Using fly-client-ip:", request.headers.get('fly-client-ip'));
+  console.log("Using fly-client-ip:", request.headers.get("fly-client-ip"));
 
   try {
     const response = await fetch(
@@ -118,7 +122,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Get location data with client IP
     const locationData = await getLocationData(clientIP);
-    
+
     // Create database record with session_id and location
     const { data: score, error: dbError } = await supabase
       .from("scores")
@@ -132,7 +136,7 @@ export async function action({ request }: ActionFunctionArgs) {
         city: locationData.city,
         region: locationData.region,
         country: locationData.country,
-        country_code: locationData.country_code
+        country_code: locationData.country_code,
       })
       .select()
       .single();
@@ -163,7 +167,6 @@ export async function action({ request }: ActionFunctionArgs) {
       status: 500,
     };
   }
-
 }
 
 export default function Home() {
@@ -407,40 +410,38 @@ export default function Home() {
         </div>
       ) : (
         <div className="flex-1 flex flex-col items-center gap-8 p-4 max-w-2xl mx-auto">
-          <header className="flex flex-col items-center gap-6 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-guinness-gold tracking-wide">
+          <header className="flex flex-col items-center gap-4 md:gap-6 text-center px-2 md:px-4">
+            <h1 className="text-3xl md:text-5xl font-bold text-guinness-gold tracking-wide">
               Split the G
             </h1>
-            <div className="flex items-center gap-2 text-guinness-tan text-sm">
+            <div className="flex items-center gap-1 md:gap-2 text-guinness-tan text-xs md:text-sm">
               <span>Powered by</span>
               <a
                 href="https://roboflow.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 transition-colors duration-300 hover:opacity-80"
+                className="flex items-center gap-1 md:gap-1.5 transition-colors duration-300 hover:opacity-80"
                 style={{ color: "#8315f9" }}
-
-                //className="flex items-center gap-1.5 text-guinness-gold hover:text-guinness-cream transition-colors duration-300"
               >
-                <RoboflowLogo className="h-10 w-10" />
-                <span className="font-bold" style={{ fontSize: "22px" }}>
+                <RoboflowLogo className="h-8 w-8 md:h-10 md:w-10" />
+                <span className="font-bold text-base md:text-[22px]">
                   Roboflow AI
                 </span>
               </a>
             </div>
-            <div className="w-32 h-0.5 bg-guinness-gold my-2"></div>
-            <p className="text-lg md:text-xl text-guinness-tan font-light max-w-sm md:max-w-md mx-auto">
+            <div className="w-24 md:w-32 h-0.5 bg-guinness-gold my-1 md:my-2"></div>
+            <p className="text-base md:text-xl text-guinness-tan font-light max-w-[280px] md:max-w-md mx-auto">
               Put your Guinness splitting technique to the test!
             </p>
             <a
               href="https://blog.roboflow.com/split-the-g-app/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-guinness-gold hover:text-guinness-cream transition-colors duration-300"
+              className="text-xs md:text-sm text-guinness-gold hover:text-guinness-cream transition-colors duration-300"
             >
               How we built this →
             </a>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap justify-center gap-2 md:gap-4 w-full px-2">
               <LeaderboardButton />
               <SubmissionsButton />
               <CountryLeaderboardButton />
