@@ -1,7 +1,7 @@
 import { type LoaderFunction } from "react-router";
 import { useLoaderData, Link } from "react-router";
 import { supabase } from "~/utils/supabase";
-import { AllTimeCountryLeaderboardButton } from "~/components/AllTimeCountryLeaderboardButton";
+import { LeaderboardNavigation } from "~/components/LeaderboardNavigation";
 
 type CountryStats = {
   country: string;
@@ -64,10 +64,10 @@ export default function Collage() {
   const { submissions } = useLoaderData<{ submissions: CountryStats[] }>();
 
   return (
-    <main className="min-h-screen bg-guinness-black py-8">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-guinness-gold mb-4">
+    <main className="min-h-screen bg-guinness-black py-4 md:py-8">
+      <div className="container mx-auto px-2 md:px-4">
+        <div className="text-center mb-4 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-guinness-gold mb-4">
             The World's Largest Split the G Contest
           </h1>
           <Link
@@ -77,34 +77,40 @@ export default function Collage() {
             ← Back to Split
           </Link>
         </div>
-        <div className="flex justify-center gap-4 mb-8">
-          <AllTimeCountryLeaderboardButton />
+        <div className="flex justify-center gap-4 mb-4 md:mb-8">
+          <LeaderboardNavigation activePage="past24hr" />
         </div>
         <div className="max-w-4xl mx-auto">
-          <p className="text-2xl font-bold text-guinness-gold mb-4">
+          <p className="text-xl md:text-2xl font-bold text-guinness-gold mb-4 px-2 md:px-4">
             Past 24 Hour Splits By Country
           </p>
           <div className="bg-guinness-gold/10 rounded-lg overflow-hidden">
-            <div className="grid grid-cols-4 gap-4 p-4 text-guinness-gold font-bold border-b border-guinness-gold/20">
-              <div>Rank</div>
-              <div>Country</div>
-              <div className="text-right">Submissions</div>
-              <div className="text-right">Avg Score</div>
+            <div className="grid grid-cols-12 gap-1 md:gap-4 p-2 md:p-4 text-guinness-gold font-bold border-b border-guinness-gold/20 text-xs md:text-base">
+              <div className="col-span-1">#</div>
+              <div className="col-span-5">Country</div>
+              <div className="col-span-3 text-right">Splits</div>
+              <div className="col-span-3 text-right">Avg</div>
             </div>
             {submissions.map((stat, index) => (
               <div
                 key={stat.country}
-                className="grid grid-cols-4 gap-4 p-4 text-guinness-tan hover:bg-guinness-gold/5 transition-colors border-b border-guinness-gold/10 last:border-0"
+                className="grid grid-cols-12 gap-1 md:gap-4 p-2 md:p-4 text-guinness-tan hover:bg-guinness-gold/5 transition-colors border-b border-guinness-gold/10 last:border-0 text-xs md:text-base"
               >
-                <div className="text-guinness-gold">#{index + 1}</div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">
+                <div className="col-span-1 text-guinness-gold">
+                  #{index + 1}
+                </div>
+                <div className="col-span-5 flex items-center gap-1 md:gap-2">
+                  <span className="text-sm md:text-xl flex-shrink-0">
                     {getCountryFlag(stat.country_code)}
                   </span>
-                  <span>{stat.country}</span>
+                  <span className="text-[0.65rem] md:text-base leading-tight">
+                    {stat.country}
+                  </span>
                 </div>
-                <div className="text-right">{stat.submission_count}</div>
-                <div className="text-right">
+                <div className="col-span-3 text-right">
+                  {stat.submission_count}
+                </div>
+                <div className="col-span-3 text-right">
                   {stat.average_score.toFixed(2)}
                 </div>
               </div>
@@ -112,10 +118,10 @@ export default function Collage() {
           </div>
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="mt-4 md:mt-8 text-center">
           <Link
             to="/"
-            className="inline-block px-6 py-3 bg-guinness-gold/10 hover:bg-guinness-gold/20 text-guinness-gold border border-guinness-gold/20 rounded-lg transition-colors"
+            className="inline-block px-4 md:px-6 py-2 md:py-3 bg-guinness-gold/10 hover:bg-guinness-gold/20 text-guinness-gold border border-guinness-gold/20 rounded-lg transition-colors text-sm md:text-base"
           >
             Back to Split
           </Link>

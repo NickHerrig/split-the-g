@@ -6,7 +6,7 @@ export function AllTimeCountryLeaderboardButton() {
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5 mr-2"
+        className="h-5 w-5 md:mr-2"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -19,7 +19,8 @@ export function AllTimeCountryLeaderboardButton() {
         <rect x="14" y="14" width="7" height="7" />
         <rect x="3" y="14" width="7" height="7" />
       </svg>
-        Go to All Time Leaderboard
+      <span className="hidden md:inline">Go to All Time Leaderboard</span>
+      <span className="inline md:hidden">All Time</span>
     </a>
   );
 }
