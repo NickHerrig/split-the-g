@@ -10,6 +10,7 @@ import { LeaderboardButton } from "../components/LeaderboardButton";
 import { SubmissionsButton } from "../components/SubmissionsButton";
 import { generateBeerUsername } from "~/utils/usernameGenerator";
 import { getLocationData } from "~/utils/locationService";
+import { CountryLeaderboardButton } from "../components/CountryLeaderboard";
 
 const isClient = typeof window !== "undefined";
 
@@ -442,6 +443,7 @@ export default function Home() {
             <div className="flex gap-4">
               <LeaderboardButton />
               <SubmissionsButton />
+              <CountryLeaderboardButton />
             </div>
           </header>
 

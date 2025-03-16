@@ -10,4 +10,6 @@ export default [
   route("leaderboard", "./routes/leaderboard.tsx"),
   route("api/email", "./routes/email.tsx"),
   route("collage", "./routes/collage.tsx"), 
+  route("countryleaderboard", "./routes/countryleaderboard.tsx"), 
+  route("past24hrleaderboard", "./routes/past24hrleaderboard.tsx"),
 ] satisfies RouteConfig;
