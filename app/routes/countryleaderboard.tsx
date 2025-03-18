@@ -11,37 +11,12 @@ type CountryStats = {
 };
 
 export const loader: LoaderFunction = async () => {
-  const { data, error } = await supabase
-    .from("scores")
-    .select("country, country_code, split_score")
-    .not("country", "is", null);
+  // Use the database function to get aggregated country stats
+  const { data, error } = await supabase.rpc('get_country_stats_all_time');
 
   if (error) throw error;
 
-  // Group the data by country
-  const countryStats = data.reduce((acc: any, curr) => {
-    if (!acc[curr.country]) {
-      acc[curr.country] = {
-        country: curr.country,
-        country_code: curr.country_code,
-        submission_count: 0,
-        total_score: 0,
-      };
-    }
-    acc[curr.country].submission_count += 1;
-    acc[curr.country].total_score += curr.split_score || 0;
-    return acc;
-  }, {});
-
-  // Convert to array and calculate averages
-  const submissions = Object.values(countryStats)
-    .map((stat: any) => ({
-      ...stat,
-      average_score: stat.total_score / stat.submission_count,
-    }))
-    .sort((a: any, b: any) => b.submission_count - a.submission_count);
-
-  return { submissions };
+  return { submissions: data || [] };
 };
 
 function getCountryFlag(countryCode: string) {
