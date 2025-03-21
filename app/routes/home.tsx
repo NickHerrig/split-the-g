@@ -417,7 +417,7 @@ export default function Home() {
             <div className="flex items-center gap-1 md:gap-2 text-guinness-tan text-xs md:text-sm">
               <span>Powered by</span>
               <a
-                href="https://roboflow.com"
+                href="https://roboflow.com/?ref=splittheg"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 md:gap-1.5 transition-colors duration-300 hover:opacity-80"
@@ -434,7 +434,7 @@ export default function Home() {
               Put your Guinness splitting technique to the test!
             </p>
             <a
-              href="https://blog.roboflow.com/split-the-g-app/"
+              href="https://blog.roboflow.com/split-the-g-app/ref=splittheg"
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs md:text-sm text-guinness-gold hover:text-guinness-cream transition-colors duration-300"
