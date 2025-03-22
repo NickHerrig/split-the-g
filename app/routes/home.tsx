@@ -395,7 +395,7 @@ export default function Home() {
         >
           <div className="relative max-w-[90vw] max-h-[90vh]">
             <img
-              src="/app/SplitGQRCode.png"
+              src="/public/splitgqrcode.png"
               alt="Split the G QR Code"
               className="w-full h-full object-contain"
             />
