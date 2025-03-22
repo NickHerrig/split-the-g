@@ -172,6 +172,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function Home() {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [showQRCode, setShowQRCode] = useState(false);
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -386,6 +387,68 @@ export default function Home() {
 
   return (
     <main className="flex items-center justify-center min-h-screen bg-guinness-black text-guinness-cream">
+      {/* QR Code Modal */}
+      {showQRCode && (
+        <div
+          className="fixed inset-0 bg-guinness-black/95 flex items-center justify-center z-50"
+          onClick={() => setShowQRCode(false)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh]">
+            <img
+              src="/app/SplitGQRCode.png"
+              alt="Split the G QR Code"
+              className="w-full h-full object-contain"
+            />
+            <button
+              onClick={() => setShowQRCode(false)}
+              className="absolute top-4 right-4 text-guinness-gold hover:text-guinness-tan transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Icon */}
+      <button
+        onClick={() => setShowQRCode(true)}
+        className="fixed top-4 right-4 z-40 p-2 bg-guinness-gold/10 hover:bg-guinness-gold/20 text-guinness-gold border border-guinness-gold/20 rounded-lg transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M3 3h6v6H3V3zm12 0h6v6h-6V3zM3 15h6v6H3v-6zm12 0h6v6h-6v-6z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 9h2v2H9V9zm4 0h2v2h-2V9zm0 4h2v2h-2v-2z"
+          />
+        </svg>
+      </button>
+
       {isUploadProcessing && (
         <div className="fixed inset-0 bg-guinness-black/95 flex flex-col items-center justify-center gap-6 z-50">
           <div className="w-24 h-24 border-4 border-guinness-gold/20 border-t-guinness-gold rounded-full animate-spin"></div>
@@ -434,7 +497,7 @@ export default function Home() {
               Put your Guinness splitting technique to the test!
             </p>
             <a
-              href="https://blog.roboflow.com/split-the-g-app/ref=splittheg"
+              href="https://blog.roboflow.com/split-the-g-app/?ref=splittheg"
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs md:text-sm text-guinness-gold hover:text-guinness-cream transition-colors duration-300"
@@ -554,90 +617,42 @@ export default function Home() {
             className="hidden"
           />
 
-          <div className="mt-8 text-guinness-tan text-sm">
-            <h2 className="text-lg font-bold">
-              How to enter the Split the G contest:
-            </h2>
-            <p>Follow the below steps before 11:59pm PST March 17, 2025.</p>
-            <ol className="list-decimal list-inside mt-2">
-              <li>
-                <strong>Receive a score</strong>: Hit the{" "}
-                <strong>Start Analysis</strong> button on the website, aim your
-                camera at the pint glass to capture an image, and let the
-                website generate your score (the closer you are to the middle of
-                the G logo, the better the score).
-              </li>
-              <li>
-                <strong>Submit your score</strong>: Hit the{" "}
-                <strong>Submit score</strong> button to submit your score to the
-                leaderboard, fill out your contact information, and hit the{" "}
-                <strong>Enter the contest</strong> button.
-              </li>
-              <li>
-                <strong>All done!</strong>
-              </li>
-            </ol>
-
-            <h2 className="text-lg font-bold mt-4">Contest Rules:</h2>
-            <ul className="list-disc list-inside mt-2">
-              <li>
-                Entry Period: Contest begins January 1, 2025 and ends 11:59pm
-                PST March 17, 2025.
-              </li>
-              <li>Prize: Commemorative item!</li>
-              <li>
-                Winner Selection: The winner will be randomly selected from all
-                eligible entries.
-              </li>
-              <li>Eligibility: Must submit email to enter.</li>
-              <li>
-                Winner Notification: The winner will be notified via the email
-                provided upon submission within 10 business days of the contest
-                end date.
-              </li>
-              <li>
-                No Purchase Necessary: Entering the contest does not require any
-                purchase.
-              </li>
-              <li>
-                Multiple Entries: Multiple entries are allowed, but each entry
-                must be submitted separately.
-              </li>
-              <li>
-                Disqualification: Any attempt to manipulate the contest or
-                submit fraudulent entries will result in disqualification.
-              </li>
-              <li>
-                Privacy: Your email and personal information will be used solely
-                for the purpose of this contest and will not be shared with
-                third parties.
-              </li>
-              <li>
-                Acceptance of Rules: By entering the contest, you agree to abide
-                by these rules and the decisions of the contest organizers.
-              </li>
-            </ul>
-          </div>
-        </div>
-      )}
-
-      {/* Add the No G Modal */}
-      {showNoGModal && (
-        <div className="fixed inset-0 bg-guinness-black/95 flex items-center justify-center z-50">
-          <div className="bg-guinness-black border border-guinness-gold/20 rounded-lg p-8 max-w-sm w-full mx-4 text-center">
-            <h3 className="text-2xl font-bold text-guinness-gold mb-4">
-              No G Detected
-            </h3>
-            <p className="text-guinness-tan mb-6">
-              We couldn't find a Guinness G pattern in your image. Please try
-              again with a clear photo of a Guinness glass.
-            </p>
-            <button
-              onClick={() => setShowNoGModal(false)}
-              className="px-6 py-3 bg-guinness-gold text-guinness-black rounded-lg hover:bg-guinness-tan transition-colors duration-300"
+          {/* Add social media buttons */}
+          <div className="flex gap-4 mt-4 w-3/4 justify-center">
+            <a
+              href="https://x.com/SplitTheGScorer"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-guinness-gold/10 hover:bg-guinness-gold/20 text-guinness-gold border border-guinness-gold/20 rounded-lg transition-colors"
             >
-              Try Again
-            </button>
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+              <span>Twitter</span>
+            </a>
+            <a
+              href="https://www.instagram.com/splitthegscorer/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-guinness-gold/10 hover:bg-guinness-gold/20 text-guinness-gold border border-guinness-gold/20 rounded-lg transition-colors"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+              </svg>
+              <span>Instagram</span>
+            </a>
+          </div>
+          <p className="text-base md:text-xl text-guinness-tan font-light max-w-[280px] md:max-w-md mx-auto text-center">
+            Tag us on X or Instagram for a chance to be featured on our Wall of
+            Fame (Coming Soon)!
+          </p>
+
+          <div className="mt-8 text-guinness-tan text-sm">
+            {showNoGModal && (
+              <p className="text-guinness-gold text-center">
+                {actionData?.message || "No G detected. Please try again."}
+              </p>
+            )}
           </div>
         </div>
       )}

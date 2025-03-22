@@ -1,6 +1,8 @@
 import { type LoaderFunction } from "react-router";
 import { useLoaderData, Link } from "react-router";
 import { supabase } from "~/utils/supabase";
+import { CountryLeaderboardButton } from "../components/CountryLeaderboard";
+import { SubmissionsButton } from "../components/SubmissionsButton";
 
 type LeaderboardEntry = {
   id: string;
@@ -16,17 +18,19 @@ export const loader: LoaderFunction = async () => {
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
   const { data, error } = await supabase
-    .from('scores')
-    .select(`
+    .from("scores")
+    .select(
+      `
       id,
       username,
       split_score,
       created_at,
       split_image_url
-    `)
-    .gte('created_at', oneWeekAgo.toISOString())
-    .order('split_score', { ascending: false })
-    .order('created_at', { ascending: false })
+    `
+    )
+    .gte("created_at", oneWeekAgo.toISOString())
+    .order("split_score", { ascending: false })
+    .order("created_at", { ascending: false })
     .limit(15);
 
   if (error) throw error;
@@ -44,6 +48,10 @@ export default function Leaderboard() {
           <h1 className="text-3xl font-bold text-guinness-gold mb-4">
             Top Splits This Week
           </h1>
+          <div className="flex flex-wrap justify-center gap-2 md:gap-4 w-full mb-4">
+            <CountryLeaderboardButton />
+            <SubmissionsButton />
+          </div>
           <Link
             to="/"
             className="text-guinness-gold hover:text-guinness-tan transition-colors inline-block"
@@ -51,7 +59,7 @@ export default function Leaderboard() {
             ← Back to Split
           </Link>
         </div>
-        
+
         <div className="max-w-3xl mx-auto">
           {entries.map((entry, index) => (
             <Link
