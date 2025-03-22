@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSubmit, useActionData, redirect } from "react-router";
 import { RoboflowLogo } from "../components/RoboflowLogo";
+import { QRCode } from "../components/QRCode";
 import { PintGlassOverlay } from "../components/PintGlassOverlay";
 import type { ActionFunctionArgs } from "react-router";
 import { calculateScore } from "~/utils/scoring";
@@ -394,11 +395,7 @@ export default function Home() {
           onClick={() => setShowQRCode(false)}
         >
           <div className="relative max-w-[90vw] max-h-[90vh]">
-            <img
-              src="/public/splitgqrcode.png"
-              alt="Split the G QR Code"
-              className="w-full h-full object-contain"
-            />
+            <QRCode className="w-full h-full object-contain" />
             <button
               onClick={() => setShowQRCode(false)}
               className="absolute top-4 right-4 text-guinness-gold hover:text-guinness-tan transition-colors"
