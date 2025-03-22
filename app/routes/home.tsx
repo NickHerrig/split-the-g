@@ -461,6 +461,26 @@ export default function Home() {
         </div>
       )}
 
+      {showNoGModal && (
+        <div className="fixed inset-0 bg-guinness-black/95 flex flex-col items-center justify-center gap-6 z-50">
+          <div className="bg-guinness-black/90 backdrop-blur-sm border border-guinness-gold/20 rounded-2xl p-8 max-w-md mx-4 text-center">
+            <p className="text-guinness-gold text-xl font-medium mb-4">
+              {actionData?.message || "No G detected"}
+            </p>
+            <p className="text-guinness-tan text-sm mb-6">
+              Please make sure the G pattern is clearly visible in your image
+              and try again.
+            </p>
+            <button
+              onClick={() => setShowNoGModal(false)}
+              className="px-6 py-2 bg-guinness-gold text-guinness-black rounded-lg hover:bg-guinness-tan transition-colors duration-300"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
+
       {isSubmitting ? (
         <div className="fixed inset-0 bg-guinness-black/95 flex flex-col items-center justify-center gap-6 z-50">
           <div className="w-24 h-24 border-4 border-guinness-gold/20 border-t-guinness-gold rounded-full animate-spin"></div>
@@ -646,14 +666,6 @@ export default function Home() {
             Tag us on X or Instagram for a chance to be featured on our Wall of
             Fame (Coming Soon)!
           </p>
-
-          <div className="mt-8 text-guinness-tan text-sm">
-            {showNoGModal && (
-              <p className="text-guinness-gold text-center">
-                {actionData?.message || "No G detected. Please try again."}
-              </p>
-            )}
-          </div>
         </div>
       )}
     </main>
