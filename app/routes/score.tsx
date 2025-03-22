@@ -247,7 +247,7 @@ export default function Score() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-guinness-tan mb-1">
-                      Bar Name 
+                      Bar Name
                     </label>
                     <div className="w-full px-4 py-2 bg-guinness-black/50 border border-guinness-gold/20 rounded-lg text-guinness-tan">
                       {score.bar_name}
