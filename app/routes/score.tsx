@@ -236,99 +236,6 @@ export default function Score() {
           </div>
         </div>
 
-        {/* Bar Name and Pour Rating Form */}
-        {isOwner && (
-          <div className="mt-8 max-w-md mx-auto">
-            {score.bar_name && score.pour_rating ? (
-              // Show submitted values
-              <div className="bg-guinness-gold/10 rounded-xl p-6 backdrop-blur-sm border border-guinness-gold/20">
-                <h2 className="text-xl font-bold text-guinness-gold mb-4">
-                  Score Your Pour
-                </h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-guinness-tan mb-1">
-                      Bar Name
-                    </label>
-                    <div className="w-full px-4 py-2 bg-guinness-black/50 border border-guinness-gold/20 rounded-lg text-guinness-tan">
-                      {score.bar_name}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-guinness-tan mb-1">
-                      Pour Rating
-                    </label>
-                    <div className="w-full px-4 py-2 bg-guinness-black/50 border border-guinness-gold/20 rounded-lg text-guinness-tan">
-                      {score.pour_rating.toFixed(2)}/5.00
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              // Show form for submission
-              <form
-                onSubmit={handleSubmit}
-                className="bg-guinness-gold/10 rounded-xl p-6 backdrop-blur-sm border border-guinness-gold/20"
-              >
-                <h2 className="text-xl font-bold text-guinness-gold mb-4">
-                  Rate The Pour
-                </h2>
-                <div className="space-y-4">
-                  <div>
-                    <label
-                      htmlFor="barName"
-                      className="block text-sm font-medium text-guinness-tan mb-1"
-                    >
-                      Bar Name (full name)
-                    </label>
-                    <input
-                      type="text"
-                      id="barName"
-                      value={barName}
-                      onChange={(e) => setBarName(e.target.value)}
-                      className="w-full px-4 py-2 bg-guinness-black/50 border border-guinness-gold/20 rounded-lg text-guinness-tan focus:outline-none focus:border-guinness-gold"
-                      placeholder="Enter bar name"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="pourRating"
-                      className="block text-sm font-medium text-guinness-tan mb-1"
-                    >
-                      Pour Rating (0.00-5.00)
-                    </label>
-                    <input
-                      type="number"
-                      id="pourRating"
-                      value={pourRating}
-                      onChange={(e) => setPourRating(e.target.value)}
-                      min="0"
-                      max="5"
-                      step="0.01"
-                      className="w-full px-4 py-2 bg-guinness-black/50 border border-guinness-gold/20 rounded-lg text-guinness-tan focus:outline-none focus:border-guinness-gold"
-                      placeholder="Enter rating (0-5)"
-                      required
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full px-4 py-2 bg-guinness-gold text-guinness-black rounded-lg font-medium hover:bg-guinness-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? "Saving..." : "Save Rating"}
-                  </button>
-                  {submitSuccess && (
-                    <p className="text-guinness-gold text-center">
-                      Rating saved successfully!
-                    </p>
-                  )}
-                </div>
-              </form>
-            )}
-          </div>
-        )}
-
         {/* Image Comparison */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
           {/* Split Analysis */}
@@ -354,7 +261,7 @@ export default function Score() {
           {/* Original Pour */}
           <div className="bg-guinness-gold/5 rounded-lg p-4">
             <h2 className="text-lg font-bold text-guinness-gold mb-2">
-              Your Pint
+              Original Pour
             </h2>
             <div className="aspect-square bg-guinness-black rounded-lg overflow-hidden">
               {score.pint_image_url ? (
@@ -369,6 +276,14 @@ export default function Score() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Add Buy Creators a Beer button here - just after the images */}
+        <div className="flex justify-center mt-6 mb-8">
+          <div className="text-center">
+            <p className="text-guinness-tan mb-3">Enjoying Split the G?</p>
+            <BuyCreatorsABeer />
           </div>
         </div>
 
@@ -419,16 +334,6 @@ export default function Score() {
                         transition-all duration-300 text-lg
                         flex items-center justify-center gap-2"
             />
-          </div>
-        </div>
-
-        {/* Add the Buy Creators a Beer button */}
-        <div className="mt-12 flex flex-col items-center gap-4 md:flex-row md:justify-center md:gap-6">
-          <div className="flex justify-center mt-8">
-            <div className="text-center">
-              <p className="text-guinness-tan mb-3">Enjoying Split the G?</p>
-              <BuyCreatorsABeer />
-            </div>
           </div>
         </div>
       </div>
