@@ -1,6 +1,8 @@
 import { type LoaderFunction } from "react-router";
 import { useLoaderData, Link } from "react-router";
 import { supabase } from "~/utils/supabase";
+import { CountryLeaderboardButton } from "../components/CountryLeaderboard";
+import { LeaderboardButton } from "../components/LeaderboardButton";
 
 type Submission = {
   id: string;
@@ -33,7 +35,7 @@ export const loader: LoaderFunction = async () => {
     `
     )
     .order("created_at", { ascending: false })
-    .limit(30);
+    .limit(60);
 
   if (error) throw error;
 
@@ -48,18 +50,18 @@ export default function Collage() {
     if (submission.city) parts.push(submission.city);
     if (submission.region) parts.push(submission.region);
     if (submission.country_code) parts.push(submission.country_code);
-    
-    return parts.length > 0 ? parts.join(', ') : '';
+
+    return parts.length > 0 ? parts.join(", ") : "";
   };
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -70,6 +72,10 @@ export default function Collage() {
           <h1 className="text-3xl font-bold text-guinness-gold mb-4">
             The World's Largest Split the G Contest
           </h1>
+          <div className="flex flex-wrap justify-center gap-2 md:gap-4 w-full mb-4">
+            <CountryLeaderboardButton />
+            <LeaderboardButton />
+          </div>
           <Link
             to="/"
             className="text-guinness-gold hover:text-guinness-tan transition-colors inline-block"
@@ -96,7 +102,9 @@ export default function Collage() {
                 <div className="bg-guinness-black/80 p-3 mt-2 rounded-lg backdrop-blur-sm">
                   <div className="text-lg font-semibold text-guinness-tan flex justify-between items-center">
                     <span>{submission.username}</span>
-                    <span className="text-guinness-gold">{submission.split_score.toFixed(2)}/5.0</span>
+                    <span className="text-guinness-gold">
+                      {submission.split_score.toFixed(2)}/5.0
+                    </span>
                   </div>
                   <div className="text-sm text-guinness-tan/60">
                     {formatDateTime(submission.created_at)}
