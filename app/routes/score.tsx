@@ -7,6 +7,7 @@ import { LeaderboardButton } from "../components/LeaderboardButton";
 import { Link } from "react-router";
 import { useState } from "react";
 import { EmailForm } from "../components/EmailForm";
+import { BuyCreatorsABeer } from "../components/BuyCreatorsABeer";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { splitId } = params;
@@ -418,6 +419,16 @@ export default function Score() {
                         transition-all duration-300 text-lg
                         flex items-center justify-center gap-2"
             />
+          </div>
+        </div>
+
+        {/* Add the Buy Creators a Beer button */}
+        <div className="mt-12 flex flex-col items-center gap-4 md:flex-row md:justify-center md:gap-6">
+          <div className="flex justify-center mt-8">
+            <div className="text-center">
+              <p className="text-guinness-tan mb-3">Enjoying Split the G?</p>
+              <BuyCreatorsABeer />
+            </div>
           </div>
         </div>
       </div>

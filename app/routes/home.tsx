@@ -18,6 +18,7 @@ import { SubmissionsButton } from "../components/SubmissionsButton";
 import { generateBeerUsername } from "~/utils/usernameGenerator";
 import { getLocationData } from "~/utils/locationService";
 import { CountryLeaderboardButton } from "../components/CountryLeaderboard";
+import { BuyCreatorsABeer } from "../components/BuyCreatorsABeer";
 
 const isClient = typeof window !== "undefined";
 
@@ -675,6 +676,11 @@ export default function Home() {
           {/* Total Splits Count */}
           <div className="text-base md:text-xl text-guinness-tan font-light max-w-[280px] md:max-w-md mx-auto text-center px-6 py-3 bg-guinness-black/90 backdrop-blur-sm border border-guinness-gold/20 rounded-2xl">
             All Time Total Splits: {totalSplits?.toLocaleString() || "0"}
+          </div>
+
+          {/* Add the Buy Creators a Beer button */}
+          <div className="flex justify-center mt-6">
+            <BuyCreatorsABeer />
           </div>
 
           {/* Add social media buttons */}

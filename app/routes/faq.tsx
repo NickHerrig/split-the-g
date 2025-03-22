@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { BuyCreatorsABeer } from "../components/BuyCreatorsABeer";
 
 export function meta() {
   return [
@@ -137,6 +138,19 @@ export default function FAQ() {
               Steady hands, a well-poured pint, and a bit of practice. Take your
               time and aim for that clean, precise sip. We believe in you.
             </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-guinness-gold mb-4">
+              How can I support the creators?
+            </h2>
+            <p className="text-guinness-tan mb-4">
+              This app is completely free, but if you're enjoying Split the G and want to show your appreciation, 
+              you can buy the creators a beer! Your support helps us keep the app running and develop new features.
+            </p>
+            <div className="flex justify-center my-6">
+              <BuyCreatorsABeer />
+            </div>
           </section>
         </div>
       </div>
