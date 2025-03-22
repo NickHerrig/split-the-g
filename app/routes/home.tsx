@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useSubmit, useActionData, redirect } from "react-router";
+import {
+  useNavigate,
+  useSubmit,
+  useActionData,
+  redirect,
+  useLoaderData,
+} from "react-router";
 import { RoboflowLogo } from "../components/RoboflowLogo";
 import { QRCode } from "../components/QRCode";
 import { PintGlassOverlay } from "../components/PintGlassOverlay";
-import type { ActionFunctionArgs } from "react-router";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { calculateScore } from "~/utils/scoring";
 import { uploadImage } from "~/utils/imageStorage";
 import { supabase } from "~/utils/supabase";
@@ -14,6 +20,15 @@ import { getLocationData } from "~/utils/locationService";
 import { CountryLeaderboardButton } from "../components/CountryLeaderboard";
 
 const isClient = typeof window !== "undefined";
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  // Get total splits (all-time)
+  const { count: totalSplits } = await supabase
+    .from("scores")
+    .select("*", { count: "exact", head: true });
+
+  return { totalSplits };
+}
 
 export function meta() {
   return [
@@ -171,6 +186,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function Home() {
+  const { totalSplits } = useLoaderData<typeof loader>();
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [showQRCode, setShowQRCode] = useState(false);
@@ -655,6 +671,11 @@ export default function Home() {
             onChange={handleFileChange}
             className="hidden"
           />
+
+          {/* Total Splits Count */}
+          <div className="text-base md:text-xl text-guinness-tan font-light max-w-[280px] md:max-w-md mx-auto text-center px-6 py-3 bg-guinness-black/90 backdrop-blur-sm border border-guinness-gold/20 rounded-2xl">
+            All Time Total Splits: {totalSplits?.toLocaleString() || "0"}
+          </div>
 
           {/* Add social media buttons */}
           <div className="flex gap-4 mt-4 w-3/4 justify-center">
