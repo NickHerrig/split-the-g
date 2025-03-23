@@ -709,8 +709,11 @@ export default function Home() {
             </a>
           </div>
           <p className="text-base md:text-xl text-guinness-tan font-light max-w-[280px] md:max-w-md mx-auto text-center">
-            Tag us on X or Instagram for a chance to be featured on our Wall of
-            Fame (Coming Soon)!
+            Tag us on X or Instagram for a chance to be featured on our{" "}
+            <strong className="font-bold text-guinness-gold">
+              Wall of Fame
+            </strong>{" "}
+            (Coming Soon)!
           </p>
         </div>
       )}
