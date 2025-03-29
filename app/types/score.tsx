@@ -12,5 +12,6 @@ export type Score = {
   country?: string;
   country_code?: string;
   bar_name?: string;
+  bar_address?: string;
   pour_rating?: number;
 };

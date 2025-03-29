@@ -15,6 +15,8 @@ type Submission = {
   country?: string;
   country_code?: string;
   split_score: number;
+  bar_name?: string;
+  bar_address?: string;
 };
 
 export const loader: LoaderFunction = async () => {
@@ -31,7 +33,9 @@ export const loader: LoaderFunction = async () => {
       region,
       country,
       country_code,
-      split_score
+      split_score,
+      bar_name,
+      bar_address
     `
     )
     .order("created_at", { ascending: false })
@@ -111,7 +115,12 @@ export default function Collage() {
                   </div>
                   {formatLocation(submission) && (
                     <div className="text-xs text-guinness-tan/40 mt-1">
-                      📍 {formatLocation(submission)}
+                      📍 {submission.bar_name}
+                      {submission.bar_address && (
+                        <div className="text-xs text-guinness-tan/30">
+                          {submission.bar_address}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

@@ -16,6 +16,7 @@ declare global {
     ENV: {
       SUPABASE_URL: string;
       SUPABASE_ANON_KEY: string;
+      GOOGLE_PLACES_API_KEY: string;
     };
   }
 }
@@ -34,9 +35,17 @@ export const links: Route.LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
 ];
 
-export function Layout({ children }: { children: React.ReactNode }) {
-  const env = useLoaderData<typeof loader>();
+export async function loader() {
+  return {
+    SUPABASE_URL: process.env.SUPABASE_URL,
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+    GOOGLE_PLACES_API_KEY: process.env.GOOGLE_PLACES_API_KEY,
+  };
+}
 
+export default function App() {
+  const env = useLoaderData<typeof loader>();
+  
   return (
     <html lang="en">
       <head>
@@ -46,7 +55,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <Outlet />
         <ScrollRestoration />
         <Scripts />
         <script
@@ -54,20 +63,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
             __html: `window.ENV = ${JSON.stringify(env)}`,
           }}
         />
+        <script
+          defer
+          src={`https://maps.googleapis.com/maps/api/js?key=${env.GOOGLE_PLACES_API_KEY}&libraries=places`}
+        />
       </body>
     </html>
   );
-}
-
-export async function loader() {
-  return {
-    SUPABASE_URL: process.env.SUPABASE_URL,
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
-  };
-}
-
-export default function App() {
-  return <Outlet />;
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

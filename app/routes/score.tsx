@@ -8,6 +8,7 @@ import { Link } from "react-router";
 import { useState } from "react";
 import { EmailForm } from "../components/EmailForm";
 import { BuyCreatorsABeer } from "../components/BuyCreatorsABeer";
+import { PlacesAutocomplete } from "~/components/PlacesAutocomplete";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { splitId } = params;
@@ -112,7 +113,8 @@ export default function Score() {
   const [shareSuccess, setShareSuccess] = useState(false);
   const [isEmailFormVisible, setIsEmailFormVisible] = useState(showEmailModal);
   const [barName, setBarName] = useState(score.bar_name || "");
-  const [pourRating, setPourRating] = useState(score.pour_rating || "");
+  const [barAddress, setBarAddress] = useState(score.bar_address || "");
+  const [pourRating, setPourRating] = useState(score.pour_rating?.toString() || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const submit = useSubmit();
@@ -130,7 +132,8 @@ export default function Score() {
         .from("scores")
         .update({
           bar_name: barName,
-          pour_rating: pourRating ? parseFloat(pourRating) : null,
+          bar_address: barAddress,
+          pour_rating: parseFloat(pourRating),
         })
         .eq("id", score.id);
 
@@ -281,14 +284,12 @@ export default function Score() {
                     >
                       Bar Name
                     </label>
-                    <input
-                      type="text"
-                      id="barName"
-                      value={barName}
-                      onChange={(e) => setBarName(e.target.value)}
-                      className="w-full px-4 py-2 bg-guinness-black/50 border border-guinness-gold/20 rounded-lg text-guinness-tan focus:outline-none focus:border-guinness-gold"
-                      placeholder="Enter bar name"
-                      required
+                    <PlacesAutocomplete
+                      initialValue={barName}
+                      onSelect={(data) => {
+                        setBarName(data.name);
+                        setBarAddress(data.address);
+                      }}
                     />
                   </div>
                   <div>
