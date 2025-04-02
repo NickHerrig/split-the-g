@@ -332,6 +332,9 @@ export default function Score() {
                     Rating saved successfully!
                   </p>
                 )}
+                <p className="text-guinness-gold text-center">
+                  Go to the <Link to="/bestbar" className="underline">Best Bar</Link> tab to see a full list of bars and their pour scores.
+                </p>
               </div>
             </form>
           ) : null}
