@@ -15,6 +15,7 @@ import { uploadImage } from "~/utils/imageStorage";
 import { supabase } from "~/utils/supabase";
 import { LeaderboardButton } from "../components/LeaderboardButton";
 import { SubmissionsButton } from "../components/SubmissionsButton";
+import { BestBarButton } from "~/components/BestBarButton";
 import { generateBeerUsername } from "~/utils/usernameGenerator";
 import { getLocationData } from "~/utils/locationService";
 import { CountryLeaderboardButton } from "../components/CountryLeaderboard";
@@ -562,8 +563,15 @@ export default function Home() {
             </a>
             <div className="flex flex-wrap justify-center gap-2 md:gap-4 w-full px-2">
               <LeaderboardButton />
-              <SubmissionsButton />
-              <CountryLeaderboardButton />
+              <div className="flex justify-center gap-4">
+                <SubmissionsButton />
+              </div>
+              <div className="flex justify-center gap-4">
+                <CountryLeaderboardButton />
+              </div>
+              <div className="flex justify-center gap-4">
+                <BestBarButton />
+              </div>
             </div>
           </header>
 

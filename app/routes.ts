@@ -13,4 +13,5 @@ export default [
   route("countryleaderboard", "./routes/countryleaderboard.tsx"), 
   route("past24hrleaderboard", "./routes/past24hrleaderboard.tsx"),
   route("faq", "./routes/faq.tsx"),
+  route("bestbar", "./routes/bestbar.tsx"),
 ] satisfies RouteConfig;
