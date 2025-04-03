@@ -114,7 +114,9 @@ export default function Score() {
   const [isEmailFormVisible, setIsEmailFormVisible] = useState(showEmailModal);
   const [barName, setBarName] = useState(score.bar_name || "");
   const [barAddress, setBarAddress] = useState(score.bar_address || "");
-  const [pourRating, setPourRating] = useState(score.pour_rating?.toString() || "");
+  const [pourRating, setPourRating] = useState(
+    score.pour_rating?.toString() || ""
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const submit = useSubmit();
@@ -235,6 +237,35 @@ export default function Score() {
               <div className="text-lg md:text-xl text-guinness-tan mt-2 max-w-md">
                 {getScoreMessage(score.split_score)}
               </div>
+              <div className="mt-4 flex gap-4">
+                <button
+                  onClick={handleShare}
+                  className="flex-1 py-2 px-4 bg-guinness-gold text-guinness-black rounded-lg hover:bg-guinness-tan transition-colors duration-300 flex items-center justify-center gap-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                    />
+                  </svg>
+                  Share Score
+                </button>
+                <Link
+                  to="/"
+                  className="flex-1 py-2 px-4 bg-guinness-gold text-guinness-black rounded-lg hover:bg-guinness-tan transition-colors duration-300 flex items-center justify-center gap-2"
+                >
+                  <span>Try Again</span>
+                  <span className="text-xl">🎯</span>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -333,7 +364,11 @@ export default function Score() {
                   </p>
                 )}
                 <p className="text-guinness-gold text-center">
-                  Go to the <Link to="/bestbar" className="underline">Best Bar</Link> tab to see a full list of bars and their pour scores.
+                  Go to the{" "}
+                  <Link to="/bestbar" className="underline">
+                    Best Bar
+                  </Link>{" "}
+                  tab to see a full list of bars and their pour scores.
                 </p>
               </div>
             </form>
@@ -388,56 +423,6 @@ export default function Score() {
           <div className="text-center">
             <p className="text-guinness-tan mb-3">Enjoying Split the G?</p>
             <BuyCreatorsABeer />
-          </div>
-        </div>
-
-        {/* Email Form */}
-        <EmailForm
-          scoreId={score.id}
-          show={isEmailFormVisible}
-          onComplete={handleEmailFormComplete}
-        />
-
-        {/* Action Buttons */}
-        <div className="mt-12 flex flex-col items-center gap-4 md:flex-row md:justify-center md:gap-6">
-          <button
-            onClick={handleShare}
-            className="w-64 px-8 py-4 bg-guinness-gold/20 text-guinness-gold rounded-full font-bold 
-                     hover:bg-guinness-gold/30 active:bg-guinness-gold/40 
-                     transition-all duration-300 text-lg
-                     flex items-center justify-center gap-2"
-          >
-            {shareSuccess ? (
-              <>
-                <span>Copied!</span>
-                <span className="text-xl">📋</span>
-              </>
-            ) : (
-              <>
-                <span>Share Score</span>
-                <span className="text-xl">🍺</span>
-              </>
-            )}
-          </button>
-
-          <Link
-            to="/"
-            className="w-64 px-8 py-4 bg-guinness-gold text-guinness-black rounded-full font-bold 
-                     hover:bg-guinness-tan active:bg-guinness-tan/90
-                     transition-all duration-300 text-lg
-                     flex items-center justify-center gap-2"
-          >
-            <span>Try Again</span>
-            <span className="text-xl">🎯</span>
-          </Link>
-
-          <div className="w-64">
-            <LeaderboardButton
-              className="w-full px-8 py-4 bg-guinness-gold/10 text-guinness-tan rounded-full font-bold 
-                        hover:bg-guinness-gold/20 active:bg-guinness-gold/30
-                        transition-all duration-300 text-lg
-                        flex items-center justify-center gap-2"
-            />
           </div>
         </div>
       </div>

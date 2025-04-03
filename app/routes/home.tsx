@@ -540,8 +540,7 @@ export default function Home() {
                 href="https://roboflow.com/?ref=splittheg"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 md:gap-1.5 transition-colors duration-300 hover:opacity-80"
-                style={{ color: "#8315f9" }}
+                className="flex items-center gap-1 md:gap-1.5 transition-colors duration-300 hover:opacity-80 text-guinness-gold"
               >
                 <RoboflowLogo className="h-8 w-8 md:h-10 md:w-10" />
                 <span className="font-bold text-base md:text-[22px]">
@@ -562,14 +561,10 @@ export default function Home() {
               How we built this →
             </a>
             <div className="flex flex-wrap justify-center gap-2 md:gap-4 w-full px-2">
-              <LeaderboardButton />
-              <div className="flex justify-center gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 w-full max-w-md">
+                <LeaderboardButton />
                 <SubmissionsButton />
-              </div>
-              <div className="flex justify-center gap-4">
                 <CountryLeaderboardButton />
-              </div>
-              <div className="flex justify-center gap-4">
                 <BestBarButton />
               </div>
             </div>
