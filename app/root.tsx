@@ -45,7 +45,7 @@ export async function loader() {
 
 export default function App() {
   const env = useLoaderData<typeof loader>();
-  
+
   return (
     <html lang="en">
       <head>
@@ -53,6 +53,11 @@ export default function App() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1544977290899320"
+          crossOrigin="anonymous"
+        ></script>
       </head>
       <body>
         <Outlet />
