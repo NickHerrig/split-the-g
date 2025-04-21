@@ -548,7 +548,13 @@ export default function Home() {
   if (showRatingForm) {
     return (
       <div className="fixed inset-0 bg-guinness-black/95 flex flex-col items-center justify-center gap-6 z-50">
-        <div className="w-full max-w-md bg-guinness-gold/10 rounded-xl p-6 backdrop-blur-sm border border-guinness-gold/20">
+        <div className="w-full max-w-md bg-guinness-gold/10 rounded-xl p-6 backdrop-blur-sm border border-guinness-gold/20 relative">
+          <button
+            onClick={() => navigate(`/score/${scoreId}`)}
+            className="absolute top-4 right-4 px-3 py-1 bg-guinness-gold/10 text-guinness-gold border border-guinness-gold/20 rounded-lg hover:bg-guinness-gold/20 transition-colors text-sm"
+          >
+            Skip
+          </button>
           <h2 className="text-xl font-bold text-guinness-gold mb-4">
             Rate The Pour
           </h2>
