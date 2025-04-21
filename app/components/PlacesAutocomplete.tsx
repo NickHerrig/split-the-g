@@ -12,6 +12,7 @@ export function PlacesAutocomplete({ onSelect, initialValue = '', className = ''
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null);
+  const debounceTimeout = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     const checkGoogleMapsLoaded = () => {
@@ -25,9 +26,7 @@ export function PlacesAutocomplete({ onSelect, initialValue = '', className = ''
     checkGoogleMapsLoaded();
   }, []);
 
-  const handleInput = async (value: string) => {
-    setInputValue(value);
-    
+  const fetchSuggestions = async (value: string) => {
     if (!value || !autocompleteService.current) {
       setSuggestions([]);
       return;
@@ -66,6 +65,29 @@ export function PlacesAutocomplete({ onSelect, initialValue = '', className = ''
       setIsLoading(false);
     }
   };
+
+  const handleInput = (value: string) => {
+    setInputValue(value);
+    
+    // Clear any existing timeout
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    // Set a new timeout to fetch suggestions after 3 seconds of no typing
+    debounceTimeout.current = setTimeout(() => {
+      fetchSuggestions(value);
+    }, 3000);
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="relative">
