@@ -213,6 +213,7 @@ export default function Home() {
   const [pourRating, setPourRating] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [scoreId, setScoreId] = useState<string | null>(null);
+  const [skipBarRating, setSkipBarRating] = useState(false);
 
   // Dynamically import and initialize inference engine
   const [inferEngine, setInferEngine] = useState<any>(null);
@@ -384,7 +385,24 @@ export default function Home() {
   // Update the effect that handles action response
   useEffect(() => {
     if (actionData) {
-      setIsUploadProcessing(false);
+      // Comment out the rating form logic - go directly to score page
+      // const checkFormCompletion = () => {
+      //   if ((barName && pourRating) || skipBarRating) {
+      //     setIsUploadProcessing(false);
+      //
+      //     // If user chose to skip bar rating and score is ready, navigate immediately
+      //     if (skipBarRating && scoreId) {
+      //       navigate(`/score/${scoreId}`);
+      //     }
+      //   } else {
+      //     // Check again in 1 second
+      //     setTimeout(checkFormCompletion, 1000);
+      //   }
+      // };
+
+      // Start checking for form completion
+      // checkFormCompletion();
+
       setIsSubmitting(false);
 
       // Check if there was an error due to no G detected
@@ -392,11 +410,15 @@ export default function Home() {
         setShowNoGModal(true);
       } else if (actionData.scoreId) {
         setScoreId(actionData.scoreId);
-        setIsProcessingComplete(true);
-        setShowRatingForm(true);
+        // Comment out rating form - go directly to score page
+        // setIsProcessingComplete(true);
+        // setShowRatingForm(true);
+
+        // Navigate directly to score page when score is ready
+        navigate(`/score/${actionData.scoreId}`);
       }
     }
-  }, [actionData]);
+  }, [actionData, navigate]);
 
   // Update the handleFileChange function
   const handleFileChange = async (
@@ -454,7 +476,7 @@ export default function Home() {
     }
   };
 
-  // Show processing spinner and rating form during image processing
+  // Show processing spinner only during image processing (commented out rating form)
   if (isUploadProcessing || isSubmitting) {
     return (
       <div className="fixed inset-0 bg-guinness-black/95 flex flex-col items-center justify-center gap-6 z-50">
@@ -468,6 +490,7 @@ export default function Home() {
           </p>
         </div>
 
+        {/* Commented out rating form - go directly to score page
         <div className="w-full max-w-md bg-guinness-gold/10 rounded-xl p-6 backdrop-blur-sm border border-guinness-gold/20">
           <h2 className="text-xl font-bold text-guinness-gold mb-4">
             Rate The Pour
@@ -484,6 +507,7 @@ export default function Home() {
                 Bar Name
               </label>
               <PlacesAutocomplete
+                key="bar-name-autocomplete-processing"
                 initialValue={barName}
                 onSelect={(data) => {
                   setBarName(data.name);
@@ -521,7 +545,10 @@ export default function Home() {
             </button>
             <button
               type="button"
-              onClick={() => navigate(`/score/${scoreId}`)}
+              onClick={() => {
+                // Mark that user doesn't want to rate a bar, but keep processing until score is ready
+                setSkipBarRating(true);
+              }}
               className="w-full px-4 py-2 bg-guinness-gold/10 text-guinness-gold border border-guinness-gold/20 rounded-lg font-medium hover:bg-guinness-gold/20 transition-colors"
             >
               Not at a bar
@@ -540,95 +567,98 @@ export default function Home() {
             </p>
           </div>
         </div>
+        */}
       </div>
     );
   }
 
-  // Show rating form after processing is complete
-  if (showRatingForm) {
-    return (
-      <div className="fixed inset-0 bg-guinness-black/95 flex flex-col items-center justify-center gap-6 z-50">
-        <div className="w-full max-w-md bg-guinness-gold/10 rounded-xl p-6 backdrop-blur-sm border border-guinness-gold/20 relative">
-          <button
-            onClick={() => navigate(`/score/${scoreId}`)}
-            className="absolute top-4 right-4 px-3 py-1 bg-guinness-gold/10 text-guinness-gold border border-guinness-gold/20 rounded-lg hover:bg-guinness-gold/20 transition-colors text-sm"
-          >
-            Skip
-          </button>
-          <h2 className="text-xl font-bold text-guinness-gold mb-4">
-            Rate The Pour
-          </h2>
-          <p className="text-guinness-tan text-sm mb-4">
-            Enter your bar name and how well they poured your Guinness.
-          </p>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="barName"
-                className="block text-sm font-medium text-guinness-tan mb-1"
-              >
-                Bar Name
-              </label>
-              <PlacesAutocomplete
-                initialValue={barName}
-                onSelect={(data) => {
-                  setBarName(data.name);
-                  setBarAddress(data.address);
-                }}
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="pourRating"
-                className="block text-sm font-medium text-guinness-tan mb-1"
-              >
-                Pour Rating (0.00-5.00)
-              </label>
-              <input
-                type="number"
-                id="pourRating"
-                value={pourRating}
-                onChange={(e) => setPourRating(e.target.value)}
-                min="0"
-                max="5"
-                step="0.01"
-                className="w-full px-4 py-2 bg-guinness-black/50 border border-guinness-gold/20 rounded-lg text-guinness-tan focus:outline-none focus:border-guinness-gold"
-                placeholder="Enter rating (0-5)"
-                required
-              />
-            </div>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isSubmitting || !barName || !pourRating}
-              className="w-full px-4 py-2 bg-guinness-gold text-guinness-black rounded-lg font-medium hover:bg-guinness-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? "Saving..." : "Save Rating"}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate(`/score/${scoreId}`)}
-              className="w-full px-4 py-2 bg-guinness-gold/10 text-guinness-gold border border-guinness-gold/20 rounded-lg font-medium hover:bg-guinness-gold/20 transition-colors"
-            >
-              Not at a bar
-            </button>
-            {submitSuccess && (
-              <p className="text-guinness-gold text-center">
-                Rating saved successfully!
-              </p>
-            )}
-            <p className="text-guinness-gold text-center text-sm">
-              Go to the{" "}
-              <Link to="/bestbar" className="underline">
-                Best Bar
-              </Link>{" "}
-              tab to see a full list of bars and their pour scores.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Show rating form after processing is complete (commented out - go directly to score page)
+  // if (showRatingForm) {
+  //   return (
+  //     <div className="fixed inset-0 bg-guinness-black/95 flex flex-col items-center justify-center gap-6 z-50">
+  //       <div className="w-full max-w-md bg-guinness-gold/10 rounded-xl p-6 backdrop-blur-sm border border-guinness-gold/20 relative">
+  //         <button
+  //           onClick={() => navigate(`/score/${scoreId}`)}
+  //           className="absolute top-4 right-4 px-3 py-1 bg-guinness-gold/10 text-guinness-gold border border-guinness-gold/20 rounded-lg hover:bg-guinness-gold/20 transition-colors text-sm"
+  //         >
+  //           Skip
+  //         </button>
+  //         <h2 className="text-xl font-bold text-guinness-gold mb-4">
+  //           Rate The Pour
+  //         </h2>
+  //         <p className="text-guinness-tan text-sm mb-4">
+  //           Enter your bar name and how well they poured your Guinness.
+  //         </p>
+  //         <div className="space-y-4">
+  //           <div>
+  //             <label
+  //               htmlFor="barName"
+  //               className="block text-sm font-medium text-guinness-tan mb-1"
+  //             >
+  //               Bar Name
+  //             </label>
+  //             <PlacesAutocomplete
+  //               key="bar-name-autocomplete-complete"
+  //               initialValue={barName}
+  //               onSelect={(data) => {
+  //                 setBarName(data.name);
+  //                   setBarAddress(data.address);
+  //                 }}
+  //               />
+  //             </div>
+  //             <div>
+  //               <label
+  //                 htmlFor="pourRating"
+  //                 className="block text-sm font-medium text-guinness-tan mb-1"
+  //               >
+  //                 Pour Rating (0.00-5.00)
+  //               </label>
+  //               <input
+  //                 type="number"
+  //                 id="pourRating"
+  //                 value={pourRating}
+  //                 onChange={(e) => setPourRating(e.target.value)}
+  //                 min="0"
+  //                 max="5"
+  //                 step="0.01"
+  //                 className="w-full px-4 py-2 bg-guinness-black/50 border border-guinness-gold/20 rounded-lg text-guinness-tan focus:outline-none focus:border-guinness-gold"
+  //                 placeholder="Enter rating (0-5)"
+  //                 required
+  //               />
+  //             </div>
+  //             <button
+  //               type="button"
+  //               onClick={handleSubmit}
+  //               disabled={isSubmitting || !barName || !pourRating}
+  //                 className="w-full px-4 py-2 bg-guinness-gold text-guinness-black rounded-lg font-medium hover:bg-guinness-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+  //               >
+  //                 {isSubmitting ? "Saving..." : "Save Rating"}
+  //               </button>
+  //             <button
+  //               type="button"
+  //               onClick={() => navigate(`/score/${scoreId}`)}
+  //               className="w-full px-4 py-2 bg-guinness-gold/10 text-guinness-gold border border-guinness-gold/20 rounded-lg font-medium hover:bg-guinness-gold/20 transition-colors"
+  //             >
+  //               Not at a bar
+  //               </button>
+  //             {submitSuccess && (
+  //               <p className="text-guinness-gold text-center">
+  //                 Rating saved successfully!
+  //               </p>
+  //             )}
+  //             <p className="text-guinness-gold text-center text-sm">
+  //               Go to the{" "}
+  //               <Link to="/bestbar" className="underline">
+  //                 Best Bar
+  //               </Link>{" "}
+  //               tab to see a full list of bars and their pour scores.
+  //             </p>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // Show processing spinner only during image processing
   if (isUploadProcessing) {
