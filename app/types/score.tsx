@@ -14,4 +14,5 @@ export type Score = {
   bar_name?: string;
   bar_address?: string;
   pour_rating?: number;
+  session_id?: string;
 };

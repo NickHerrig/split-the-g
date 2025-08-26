@@ -26,7 +26,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Get the score data
   const { data: score, error } = await supabase
     .from("scores")
-    .select("*")
+    .select("*, session_id")
     .eq("id", splitId)
     .single();
 
@@ -77,6 +77,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // Check if the user owns this score
   const isOwner = sessionId === score.session_id;
+
+  // Debug session info
+  console.log("Session Debug:", {
+    cookieSessionId: sessionId,
+    scoreSessionId: score.session_id,
+    isOwner: sessionId === score.session_id,
+    cookieHeader: cookieHeader,
+  });
 
   // Only show email modal if user is the owner and hasn't submitted email or opted out
   const showEmailModal = isOwner && !score.email && !score.email_opted_out;
@@ -237,6 +245,72 @@ export default function Score() {
               <div className="text-lg md:text-xl text-guinness-tan mt-2 max-w-md">
                 {getScoreMessage(score.split_score)}
               </div>
+
+              {/* Rate The Pour Section - moved here above the buttons */}
+              <div className="mt-6 w-full max-w-md">
+                <div className="bg-guinness-gold/10 rounded-xl p-4 backdrop-blur-sm border border-guinness-gold/20">
+                  <h3 className="text-lg font-bold text-guinness-gold mb-3 text-center">
+                    Rate The Pour
+                  </h3>
+                  <p className="text-guinness-tan text-xs mb-4 text-center">
+                    How well did they pour your Guinness?
+                  </p>
+
+                  <form onSubmit={handleSubmit} className="space-y-3">
+                    <div>
+                      <label
+                        htmlFor="barName"
+                        className="block text-xs font-medium text-guinness-tan mb-1"
+                      >
+                        Bar Name
+                      </label>
+                      <PlacesAutocomplete
+                        initialValue={barName}
+                        onSelect={(data) => {
+                          setBarName(data.name);
+                          setBarAddress(data.address);
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="pourRating"
+                        className="block text-xs font-medium text-guinness-tan mb-1"
+                      >
+                        Pour Rating (0.00-5.00)
+                      </label>
+                      <input
+                        type="number"
+                        id="pourRating"
+                        value={pourRating}
+                        onChange={(e) => setPourRating(e.target.value)}
+                        min="0"
+                        max="5"
+                        step="0.01"
+                        className="w-full px-3 py-2 bg-guinness-black/50 border border-guinness-gold/20 rounded-lg text-guinness-tan focus:outline-none focus:border-guinness-gold text-sm"
+                        placeholder="Enter rating (0-5)"
+                        required
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || !barName || !pourRating}
+                      className="w-full px-3 py-2 bg-guinness-gold text-guinness-black rounded-lg font-medium hover:bg-guinness-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    >
+                      {isSubmitting ? "Saving..." : "Save Rating"}
+                    </button>
+
+                    {submitSuccess && (
+                      <p className="text-guinness-gold text-center text-xs">
+                        Rating saved successfully! 🍺
+                      </p>
+                    )}
+                  </form>
+                </div>
+              </div>
+
               <div className="mt-4 flex gap-4">
                 <button
                   onClick={handleShare}
@@ -312,6 +386,8 @@ export default function Score() {
             </div>
           </div>
         </div>
+
+        {/* Rate The Pour Section - moved above the buttons */}
 
         {/* Add Buy Creators a Beer button here - just after the images */}
         <div className="flex justify-center mt-6 mb-8">
